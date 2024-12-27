@@ -1,0 +1,249 @@
+{
+    "erc20": [
+        "function allowance(address owner, address spender) view returns (uint256)",
+        "function approve(address spender, uint256 amount) returns (bool)",
+        "function balanceOf(address account) view returns (uint256)",
+        "function decimals() view returns (uint8)",
+        "function name() view returns (string)",
+        "function symbol() view returns (string)",
+        "function transfer(address to, uint256 amount) returns (bool)"
+    ],
+    "erc721": [
+        "function balanceOf(address owner) view returns (uint256)",
+        "function ownerOf(uint256 tokenId) view returns (address)",
+        "function safeTransferFrom(address from, address to, uint256 tokenId)",
+        "function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)",
+        "function transferFrom(address from, address to, uint256 tokenId)",
+        "function approve(address to, uint256 tokenId)",
+        "function setApprovalForAll(address operator, bool approved)",
+        "function getApproved(uint256 tokenId) view returns (address)",
+        "function isApprovedForAll(address owner, address operator) view returns (bool)",
+        "function name() view returns (string)",
+        "function symbol() view returns (string)",
+        "function tokenURI(uint256 tokenId) view returns (string)",
+        "function safeMint(address to, uint256 tokenId) returns (bool)"
+    ],
+    "chainlink": [
+        "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)"
+    ],
+    "uniswapV3": [
+        "function slot0() view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
+        "function token0() view returns (address)",
+        "function token1() view returns (address)",
+        "function fee() view returns (uint24)",
+        "function decimals() view returns (uint8)",
+        "function liquidity() view returns (uint128)"
+    ],
+    "uniswapQuoter": [
+        {
+            "inputs": [
+                {
+                    "components": [
+                        { "internalType": "address", "name": "tokenIn", "type": "address" },
+                        { "internalType": "address", "name": "tokenOut", "type": "address" },
+                        { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+                        { "internalType": "uint24", "name": "fee", "type": "uint24" },
+                        { "internalType": "uint160", "name": "sqrtPriceLimitX96", "type": "uint160" }
+                    ],
+                    "internalType": "struct IQuoterV2.QuoteExactInputSingleParams",
+                    "name": "params",
+                    "type": "tuple"
+                }
+            ],
+            "name": "quoteExactInputSingle",
+            "outputs": [
+                { "internalType": "uint256", "name": "amountOut", "type": "uint256" },
+                { "internalType": "uint160", "name": "sqrtPriceX96After", "type": "uint160" },
+                { "internalType": "uint32", "name": "initializedTicksCrossed", "type": "uint32" },
+                { "internalType": "uint256", "name": "gasEstimate", "type": "uint256" }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                { "internalType": "bytes", "name": "path", "type": "bytes" },
+                { "internalType": "uint256", "name": "amountIn", "type": "uint256" }
+            ],
+            "name": "quoteExactInput",
+            "outputs": [
+                { "internalType": "uint256", "name": "amountOut", "type": "uint256" },
+                { "internalType": "uint160[]", "name": "sqrtPriceX96AfterList", "type": "uint160[]" },
+                { "internalType": "uint32[]", "name": "initializedTicksCrossedList", "type": "uint32[]" },
+                { "internalType": "uint256", "name": "gasEstimate", "type": "uint256" }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                { "internalType": "bytes", "name": "path", "type": "bytes" },
+                { "internalType": "uint256", "name": "amountOut", "type": "uint256" }
+            ],
+            "name": "quoteExactOutput",
+            "outputs": [
+                { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+                { "internalType": "uint160[]", "name": "sqrtPriceX96AfterList", "type": "uint160[]" },
+                { "internalType": "uint32[]", "name": "initializedTicksCrossedList", "type": "uint32[]" },
+                { "internalType": "uint256", "name": "gasEstimate", "type": "uint256" }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ],
+    "universalRouter": [
+        "function execute(bytes calldata commands, bytes[] calldata inputs, uint256 deadline) external payable returns (bytes[] memory outputs)"
+    ],
+    "permit2": [
+        {
+            "inputs": [
+                {"internalType": "address", "name": "", "type": "address"},
+                {"internalType": "address", "name": "", "type": "address"},
+                {"internalType": "address", "name": "", "type": "address"}
+            ],
+            "name": "allowance",
+            "outputs": [
+                {"internalType": "uint160", "name": "amount", "type": "uint160"},
+                {"internalType": "uint48", "name": "expiration", "type": "uint48"},
+                {"internalType": "uint48", "name": "nonce", "type": "uint48"}
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },    
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "components": [
+                        {
+                            "components": [
+                                {"internalType": "address", "name": "token", "type": "address"},
+                                {"internalType": "uint160", "name": "amount", "type": "uint160"},
+                                {"internalType": "uint48", "name": "expiration", "type": "uint48"},
+                                {"internalType": "uint48", "name": "nonce", "type": "uint48"}
+                            ],
+                            "internalType": "struct IAllowanceTransfer.PermitDetails",
+                            "name": "details",
+                            "type": "tuple"
+                        },
+                        {"internalType": "address", "name": "spender", "type": "address"},
+                        {"internalType": "uint256", "name": "sigDeadline", "type": "uint256"}
+                    ],
+                    "internalType": "struct IAllowanceTransfer.PermitSingle",
+                    "name": "permitSingle",
+                    "type": "tuple"
+                },
+                {"internalType": "bytes", "name": "signature", "type": "bytes"}
+            ],
+            "name": "permit",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "components": [
+                        {
+                            "components": [
+                                {"internalType": "address", "name": "token", "type": "address"},
+                                {"internalType": "uint160", "name": "amount", "type": "uint160"},
+                                {"internalType": "uint48", "name": "expiration", "type": "uint48"},
+                                {"internalType": "uint48", "name": "nonce", "type": "uint48"}
+                            ],
+                            "internalType": "struct IAllowanceTransfer.PermitDetails[]",
+                            "name": "details",
+                            "type": "tuple[]"
+                        },
+                        {"internalType": "address", "name": "spender", "type": "address"},
+                        {"internalType": "uint256", "name": "sigDeadline", "type": "uint256"}
+                    ],
+                    "internalType": "struct IAllowanceTransfer.PermitBatch",
+                    "name": "permitBatch",
+                    "type": "tuple"
+                },
+                {"internalType": "bytes", "name": "signature", "type": "bytes"}
+            ],
+            "name": "permit",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },    
+        {
+            "inputs": [
+                { "internalType": "address", "name": "from", "type": "address" },
+                { "internalType": "address", "name": "to", "type": "address" },
+                { "internalType": "uint256", "name": "value", "type": "uint256" }
+            ],
+            "name": "transferFrom",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ],
+    "uniswapV3Router": [
+        {
+            "inputs": [
+                {
+                    "components": [
+                        { "internalType": "address", "name": "tokenIn", "type": "address" },
+                        { "internalType": "address", "name": "tokenOut", "type": "address" },
+                        { "internalType": "uint24", "name": "fee", "type": "uint24" },
+                        { "internalType": "address", "name": "recipient", "type": "address" },
+                        { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+                        { "internalType": "uint256", "name": "amountOutMinimum", "type": "uint256" },
+                        { "internalType": "uint160", "name": "sqrtPriceLimitX96", "type": "uint160" }
+                    ],
+                    "internalType": "struct IV3SwapRouter.ExactInputSingleParams",
+                    "name": "params",
+                    "type": "tuple"
+                }
+            ],
+            "name": "exactInputSingle",
+            "outputs": [
+                { "internalType": "uint256", "name": "amountOut", "type": "uint256" }
+            ],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                { "internalType": "uint256", "name": "amountMinimum", "type": "uint256" },
+                { "internalType": "address", "name": "recipient", "type": "address" }
+            ],
+            "name": "unwrapWETH9",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+                { "internalType": "bytes[]", "name": "data", "type": "bytes[]" }
+            ],
+            "name": "multicall",
+            "outputs": [
+                { "internalType": "bytes[]", "name": "results", "type": "bytes[]" }
+            ],
+            "stateMutability": "payable",
+            "type": "function"
+        }    
+    ],
+    "uniswapV3Factory": [
+        "function getPool(address tokenA, address tokenB, uint24 fee) external view returns (address)"
+    ],
+    "uniswapV3Pool": [
+        "function token0() external view returns (address)",
+        "function token1() external view returns (address)",
+        "function liquidity() external view returns (uint128)"
+    ]
+}
