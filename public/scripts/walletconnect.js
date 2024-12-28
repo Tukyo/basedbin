@@ -103,6 +103,7 @@ async function updateWalletConnectionStatus(bool, walletAddress) {
   isReturningUser = await getCachedUserWallet(connectedWallet);
 
   document.dispatchEvent(new CustomEvent('walletConnected'));
+  fetchPremiumBalances();
 
   if (isReturningUser) { updateElement(startButton, "Welcome Back"); } //processAndReplaceText(startButton, "Welcome Back");
   console.log("Wallet address: ", walletAddress);

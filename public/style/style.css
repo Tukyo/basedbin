@@ -8,6 +8,7 @@
     --coinbase_main: #0052FF;
     --coinbase_dark: #003cbc;
     --coinbase_light: #6A8BFF;
+    
     --rainbow_1: #D058C1;
     --rainbow_1_dark: #9d3b90;
     --rainbow_1_light: #f6a3e8;
@@ -33,7 +34,6 @@ html {
 body {
     display: flex;
     flex-direction: column;
-    margin: 5vh auto;
     gap: 20px;
     font-family: "Inter", sans-serif;
     font-weight: 400;
@@ -60,13 +60,19 @@ h1 {
     display: flex;
     justify-content: center;
     font-size: 4.5rem;
-    margin: 50px auto 10px auto;
+    margin: 10px auto 10px auto;
     text-align: center;
     white-space: nowrap;
     width: 100%;
+    pointer-events: none;
+    user-select: none;
+    transition: 0.25s ease-in-out;
 }
 p {
     color: #888888;
+    pointer-events: none;
+    user-select: none;
+    transition: 0.25s ease-in-out;
 }
 .subtext {
     margin: 0px 0px 20px 0px;
@@ -89,9 +95,8 @@ nav ul li a {
 section {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    background-color: black;
-    padding: 5vh 0 5vh 0;
+    justify-content: center;
+    background-color: transparent;
 }
 #main_section {
     min-height: 100vh;
@@ -116,28 +121,6 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
     appearance: textfield;
     -moz-appearance: textfield;
-}
-footer {
-    background-color: var(--slate);
-    color: white;
-    text-align: center;
-    padding: 10px 20px;
-    margin-top: auto;
-}
-#tukyo_footer {
-    color: #888888;
-}
-#tukyo_footer:hover {
-    cursor: pointer;
-    animation: rainbowCycle 4s linear infinite;
-}
-#tukyo_footer svg {
-    width: 1rem;
-    height: 1rem;
-    transform: translateY(.125rem);
-}
-#tukyo_footer svg .cls-1 {
-    fill: currentColor;
 }
 /**/
     /* #region Scrollbar */
@@ -168,7 +151,7 @@ footer {
     text-align: center;
     width: 60%;
     margin: 0 auto;
-    background: black;
+    background: transparent;
     border-radius: 5px;
 }
 #home_container {
@@ -213,16 +196,6 @@ button:focus {
 }
 .pulse:hover::after {
     animation: none;
-}
-@-webkit-keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 var(--main);
-    }
-}
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 var(--main);
-    }
 }
 .close:hover,
 .close:focus {
@@ -304,6 +277,7 @@ label:active:after {
     margin-top: 7.5vh;
     border: 1px solid #555;
     border-radius: 10px;
+    background-color: black;
 }
 .tokens_mask {
     overflow-y: auto;
@@ -341,7 +315,7 @@ label:active:after {
     border-radius: 50px;
 }
 .default_logo {
-    filter: invert(1);
+    color: var(--dark);
 }
 tr {
     transition: box-shadow 0.25s ease-in-out;
@@ -411,7 +385,31 @@ tr {
     height: 3rem;
 }
 /* #endregion Logo */
-
+/**/
+/* #region Footer */
+footer {
+    background-color: var(--slate);
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    margin-top: auto;
+}
+#tukyo_footer {
+    color: #888888;
+}
+#tukyo_footer:hover {
+    cursor: pointer;
+    animation: rainbowCycle 4s linear infinite;
+}
+#tukyo_footer svg {
+    width: 1rem;
+    height: 1rem;
+    transform: translateY(.125rem);
+}
+#tukyo_footer svg .cls-1 {
+    fill: currentColor;
+}
+/* #endregion Footer */
 
 #scroll_prompt {
     position: absolute;
@@ -423,4 +421,12 @@ tr {
     margin: 10px auto;
     transform: translateX(-50%);
     left: 50%;
+}
+#three_js_canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
 }

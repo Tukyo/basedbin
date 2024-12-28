@@ -7,8 +7,13 @@ let connectedWallet = null;
 let isUsingTokenCache = false;
 //
 ////
+// Premium
+let isPremium = false;
+let premiumBalances = [];
+//
+////
 // Cache
-const cacheStale = 3600000; // 1 hour
+const cacheStale = 36000000000; // 1 hour
 //
 // Chain
 const chainID = "0x2105";
@@ -19,6 +24,11 @@ const chainName = "Base Mainnet";
 const loaderHTML = `<div class="loader"></div>`;
 const scrollPrompt = document.getElementById('scroll_prompt');
 const characters = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトホモヨョロヲゴゾドボポヴッン0123456789DESYPHEƎR';
+const defaultTokenSVG = `
+<svg class="default_logo" width="100%" height="100%" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" fill-rule="evenodd"
+        d="M6,12 C2.68629,12 0,9.313725 0,6 C0,2.68629 2.68629,0 6,0 C9.313725,0 12,2.68629 12,6 C12,9.313725 9.313725,12 6,12 Z M3.324375,4.643415 C3.324375,4.329675 3.4311225,4.0118025 3.644625,3.689805 C3.8581275,3.3678075 4.169625,3.10113 4.579125,2.8897725 C4.988625,2.6784075 5.46636,2.5727475 6.01236,2.5727475 C6.5198625,2.5727475 6.967875,2.6610825 7.356375,2.8377675 C7.744875,3.0144525 8.045025,3.2547075 8.25675,3.55854 C8.468475,3.8623725 8.574375,4.1926275 8.574375,4.5492975 C8.574375,4.830015 8.514,5.0760375 8.39325,5.2874025 C8.2725,5.49876 8.129025,5.6812275 7.96275,5.83479 C7.796475,5.98836 7.498125,6.24678 7.0676175,6.610065 C6.9486225,6.71244 6.853245,6.8024175 6.7814925,6.8800275 C6.7097475,6.9576375 6.65637,7.0286475 6.6213675,7.09305 C6.3321,7.7601 5.077635,7.6848 5.319375,6.7512375 C5.4103725,6.54813 5.5311225,6.369795 5.681625,6.216225 C5.8321275,6.062655 6.0351075,5.880195 6.29061,5.66883 C6.5146125,5.4838875 6.6765,5.3443725 6.77625,5.250255 C6.876,5.15613 6.96,5.051265 7.02825,4.935675 C7.0965,4.820085 7.13061,4.694595 7.13061,4.55919 C7.13061,4.2949875 7.0265025,4.07208 6.81825,3.890445 C6.610005,3.7088025 6.3413625,3.6179775 6.01236,3.6179775 C5.627355,3.6179775 5.343855,3.70962 5.16186,3.8929125 C4.9798575,4.076205 4.82586,4.3461825 4.69986,4.70286 C4.5808575,5.076045 4.3551225,5.2626375 4.0226175,5.2626375 C3.82662,5.2626375 3.661245,5.19741 3.5265,5.0669625 C3.3917475,4.936515 3.324375,4.795335 3.324375,4.643415 Z M6,9.75 C5.5857825,9.75 5.25,9.414225 5.25,9 C5.25,8.585775 5.5857825,8.25 6,8.25 C6.4142175,8.25 6.75,8.585775 6.75,9 C6.75,9.414225 6.4142175,9.75 6,9.75 Z"/>
+</svg>`;
 //// Root
 const root = document.documentElement;
 const rainbowColors = [
@@ -56,6 +66,7 @@ const tableBody = document.getElementById("tokens_body");
 const nameHeader = document.getElementById("table_name");
 const tokensHeader = document.getElementById("table_tokens");
 const valueHeader = document.getElementById("table_value");
+let currentSortType = "value";
 ////
 //
 ////
@@ -227,6 +238,7 @@ let currentETHPrice = null;
             }
             tokens = tokens.filter((token) => token !== null);
             console.log("Tokens:", tokens);
+            document.dispatchEvent(new CustomEvent("tokenDetailsFetched", { detail: { tokens } }));
             if (!isUsingTokenCache) { cacheTokenDetails(walletAddress, tokens); fetchLogosBackground(15000, 3); }
             return tokens;
         } catch (error) {
@@ -485,6 +497,32 @@ let currentETHPrice = null;
     }
     // #endregion Crypto Details
 ////
+    // #region Premium
+    async function fetchPremiumBalances() {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const walletAddress = await signer.getAddress();
+            connectedWallet = walletAddress;
+
+            const response = await fetch("/api/getPremiumBalances", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ walletAddress }),
+            });
+
+            if (!response.ok) { throw new Error("Failed to fetch premium balances"); }
+
+            const data = await response.json();
+            console.log("Premium Balances:", data.balances);
+
+            return data.balances;
+        } catch (error) { console.error("Error:", error); }
+    }
+    // #endregion Premium
+////
     // #region Caching
     function cacheUserWallet(walletAddress) {
         const checksummedAddress = checksumAddress(walletAddress);
@@ -524,7 +562,6 @@ let currentETHPrice = null;
         localStorage.setItem('tokenDetailsCache', JSON.stringify(tokenDetailsCache));
         console.log(`Token details cached for wallet: ${truncate(checksummedAddress)}${isStale ? " (replaced due to staleness)" : ""}`);
     }
-    
     //
     function fetchTokenCache(walletAddress) {
         const checksummedAddress = checksumAddress(walletAddress);
@@ -545,19 +582,21 @@ let currentETHPrice = null;
         return null; // No valid cache
     }
     //
-    function cacheRootColors(colors) {
+    function cacheUserDetails(colors = null, cacheSorting = false) {
         if (!connectedWallet) return;
 
         const checksummedAddress = checksumAddress(connectedWallet);
         const userCache = JSON.parse(localStorage.getItem('user')) || {};
-
-        userCache[checksummedAddress] = { colors };
-
+    
+        userCache[checksummedAddress] = { colors: colors || userCache[checksummedAddress]?.colors || null, };
+        if (currentSortType !== null && cacheSorting) { userCache.sortType = currentSortType; }
+    
         localStorage.setItem('user', JSON.stringify(userCache));
-        console.log(`Cached colors for wallet ${truncate(checksummedAddress)}:`, colors);
+    
+        console.log(`Cached data for wallet ${truncate(checksummedAddress)}`);
     }
     //
-    function fetchColors() {
+    function fetchUserDetails() {
         if (!connectedWallet) return;
 
         const checksummedAddress = checksumAddress(connectedWallet);
@@ -569,8 +608,10 @@ let currentETHPrice = null;
             setRootColors(colors);
             console.log(`Fetched colors for wallet: ${truncate(checksummedAddress)}`);
             return;
+        } else {
+            setRootColors();
         }
-        setRootColors();
+        if (userCache.sortType) { currentSortType = userCache.sortType; }
     }
     // #endregion Caching
 ////

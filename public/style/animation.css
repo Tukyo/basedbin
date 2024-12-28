@@ -1,21 +1,6 @@
-@keyframes gradient {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
 .fade {
     animation: fade .5s ease-in-out forwards;
 }
-
 @keyframes fade {
     0% {
         opacity: 1;
@@ -44,7 +29,6 @@
 .hide {
     animation: hide 0.5s ease-in-out forwards;
     opacity: 0;
-    /* Fades out */
 }
 
 @keyframes hide {
@@ -57,6 +41,62 @@
     }
 }
 
+.loader {
+    width: 1.75rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(farthest-side, var(--main) 94%, #0000) top/6px 6px no-repeat,
+        conic-gradient(#0000 30%, var(--main));
+    -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
+    mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
+    animation: loader 1s infinite linear;
+}
+@keyframes loader {
+    100% {
+        transform: rotate(1turn)
+    }
+}
+
+.scroll_prompt_animate {
+    animation: verticalSlide 2s linear infinite
+}
+@keyframes verticalSlide {
+    0% {
+        transform: translateY(-80%);
+        opacity: 0
+    }
+
+    30% {
+        transform: translateY(-5%);
+        opacity: 1
+    }
+
+    70% {
+        transform: translateY(5%);
+        opacity: 1
+    }
+
+    to {
+        transform: translateY(80%);
+        opacity: 0
+    }
+}
+
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
 @keyframes rainbowCycle {
     0% {
         color: var(--rainbow_1);
@@ -86,7 +126,6 @@
         color: var(--rainbow_1);
     }
 }
-
 @keyframes fadeup {
     0% {
         opacity: 0;
@@ -98,7 +137,6 @@
         transform: translateY(0);
     }
 }
-
 @keyframes fadedown {
     0% {
         opacity: 0;
@@ -110,43 +148,13 @@
         transform: translateY(0);
     }
 }
-.loader {
-    width: 1.75rem;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background:
-        radial-gradient(farthest-side, var(--main) 94%, #0000) top/6px 6px no-repeat,
-        conic-gradient(#0000 30%, var(--main));
-    -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
-    animation: l13 1s infinite linear;
-}
-@keyframes l13 {
-    100% {
-        transform: rotate(1turn)
-    }
-}
-@keyframes verticalSlide {
+@-webkit-keyframes pulse {
     0% {
-        transform: translateY(-80%);
-        opacity: 0
-    }
-
-    30% {
-        transform: translateY(-5%);
-        opacity: 1
-    }
-
-    70% {
-        transform: translateY(5%);
-        opacity: 1
-    }
-
-    to {
-        transform: translateY(80%);
-        opacity: 0
+        box-shadow: 0 0 0 0 var(--main);
     }
 }
-
-.animate-verticalSlide {
-    animation: verticalSlide 2s linear infinite
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 var(--main);
+    }
 }

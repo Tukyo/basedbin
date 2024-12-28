@@ -36,6 +36,8 @@ const wethAddress = "0x4200000000000000000000000000000000000006";
 const chainlinkPricefeed = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419";
 const uniswapV3FactoryAddress = "0x33128a8fC17869897dcE68Ed026d694621f6FDfD";
 
+const premiumContractAddresses = [ "0x21b9d428eb20fa075a29d51813e57bab85406620" ]
+
 const abis = require('./abi.json');
 const chainlinkABI = abis.chainlink;
 const erc20ABI = abis.erc20;
@@ -411,7 +413,32 @@ const uniswapV3PoolABI = abis.uniswapV3Pool;
         }
     }); 
 ////
+// #endregion Token Fetching
 //
+// #region Premium
+////
+    app.post("/api/getPremiumBalances", async (req, res) => {
+        try {
+        const { walletAddress } = req.body;
+    
+        if (!walletAddress) { return res.status(400).json({ error: "Wallet address is required" }); }
+    
+        const balances = {};
+        for (const address of premiumContractAddresses) {
+            const contract = new ethers.Contract(address, erc20ABI, baseProvider);
+    
+            const balance = await contract.balanceOf(walletAddress);
+            balances[address] = ethers.formatEther(balance);
+        }
+    
+        res.status(200).json({ balances });
+        } catch (error) {
+        console.error("Error fetching balances:", error);
+        res.status(500).json({ error: "Internal server error" });
+        }
+    });
+////
+// #endregion Premium
 ////////////////////////////////////////////////////////////////////////////////
 // #endregion Functions
 

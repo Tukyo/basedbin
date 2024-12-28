@@ -18,6 +18,24 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.0/ethers.umd.min.js"></script>
+
+    <!-- Core Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/build/three.min.js"></script>
+
+    <!-- GLTFLoader -->
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/loaders/GLTFLoader.js"></script>
+
+    <!-- Postprocessing Modules -->
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/postprocessing/ShaderPass.js"></script>
+
+    <!-- Shader Modules -->
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/shaders/FXAAShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/shaders/LuminosityHighPassShader.js"></script>
+
 </head>
 
 <body>
@@ -129,13 +147,14 @@
     </header>
     <!-- #endregion Header -->
 
+    <canvas id="three_js_canvas"></canvas>
     <!-- #region Main Section -->
     <section id="main_section">
         <div class="container" id="home_container">
-            <h1>Based Bin</h1>
-            <p>Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will automagically
+            <h1 data-speed="0.15">Based Bin</h1>
+            <p data-speed="0.1">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will automagically
                 sell any assets below that threshold!</p>
-            <button class="pulse" id="start_button">Get Started</button>
+            <button class="pulse" id="start_button" data-speed="0.075">Get Started</button>
         </div>
         <div class="container" id="recycle_container" style="display: none;">
             <div class="container" id="tokens">
@@ -177,7 +196,7 @@
                 please refresh your wallet connection if you face issues. Experimental tool, use at your own risk!</p>
         </div>
         <div id="scroll_prompt">
-            <div class="animate-verticalSlide"><svg width="12" height="12" viewBox="0 0 24 24" fill="black"
+            <div class="scroll_prompt_animate"><svg width="12" height="12" viewBox="0 0 24 24" fill="black"
                     xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M19.4199 7.52002L11.9999 14.94L4.57994 7.52002L2.80994 9.29002L11.9999 18.48L21.1899 9.29002L19.4199 7.52002Z"
@@ -192,34 +211,34 @@
         <div class="container about_container">
             <div class="about_content">
                 <div class="about_left">
-                    <h2>Connect Wallet</h2>
-                    <p>Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
+                    <h2 data-speed="0.1">Connect Wallet</h2>
+                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
-                <div class="about_right">
+                <div class="about_right" data-speed="0.05">
                     <img src="https://wallpapers.com/images/featured/blank-white-7sn5o1woonmklx1h.jpg"></img>
                 </div>
             </div>
             <div class="about_content">
-                <div class="about_left">
+                <div class="about_left" data-speed="0.05">
                     <img src="https://wallpapers.com/images/featured/blank-white-7sn5o1woonmklx1h.jpg"></img>
                 </div>
                 <div class="about_right">
-                    <h2>Set Threshold</h2>
-                    <p>Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
+                    <h2 data-speed="0.1">Set Threshold</h2>
+                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
             </div>
             <div class="about_content">
                 <div class="about_left">
-                    <h2>Recycle</h2>
-                    <p>Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
+                    <h2 data-speed="0.1">Recycle</h2>
+                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
-                <div class="about_right">
+                <div class="about_right" data-speed="0.05">
                     <img src="https://wallpapers.com/images/featured/blank-white-7sn5o1woonmklx1h.jpg"></img>
                 </div>
             </div>
@@ -252,6 +271,7 @@
 <script src="scripts/global.js"></script>
 <script src="scripts/walletconnect.js"></script>
 <script src="scripts/interface.js"></script>
+<script src="scripts/3d.js"></script>
 
 </html>
 </div>

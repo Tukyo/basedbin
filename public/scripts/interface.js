@@ -1,15 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () { console.log('interface.js loaded...'); });
 
 // #region Initialization
-document.addEventListener('walletConnected', () => { fetchColors(); });
-document.addEventListener("tokenImageFound", (event) => { const { token } = event.detail; updateTokenImage(token); });
+document.addEventListener('walletConnected', () => { fetchUserDetails(); });
+document.addEventListener('tokenImageFound', (event) => { const { token } = event.detail; updateTokenImage(token); });
+document.addEventListener('tokenDetailsFetched', () => { sortTable(currentSortType); });
+document.addEventListener('backgroundLogoFetchingComplete', () => { appendDefaultLogos(); });
 toggleSwitch.addEventListener("change", () => { isValueCheck = toggleSwitch.checked; highlightRows(); });
 thresholdInput.addEventListener("input", () => { currentThreshold = parseFloat(thresholdInput.value) || 0; highlightRows(); });
-
-let isRecycling = false;
-let currentThreshold = null;
-let isValueCheck = false;
-
 startButton.addEventListener('click', async () => {
     if (!isConnected) { await connectWallet(); }
 
@@ -20,6 +17,16 @@ startButton.addEventListener('click', async () => {
     isRecycling = true;
     updateMainDisplay();
 });
+nameHeader.addEventListener('click', handleHeaderClick("name"));
+tokensHeader.addEventListener('click', handleHeaderClick("tokens"));
+valueHeader.addEventListener('click', handleHeaderClick("value"));
+
+let isRecycling = false;
+let currentThreshold = null;
+let isValueCheck = false;
+
+let tableSortTypes = ["name", "name_reverse", "tokens", "tokens_reverse", "value", "value_reverse"];
+
 // #endregion Initialization
 ////
 // #region Main Interface
@@ -105,20 +112,18 @@ function populateTokensTable(passedTokens = null) {
     });
 }
 function createLogoCell(token) {
-    
     const logoCell = document.createElement("td");
     logoCell.classList.add("list_cell");
 
-    const img = document.createElement("img");
     if (token.image !== "NOT_FOUND") {
+        const img = document.createElement("img");
         img.src = token.image;
         img.classList.add("token_logo");
+        logoCell.appendChild(img);
     } else {
-        img.src = "assets/img/default.svg";
-        img.classList.add("default_logo");
+        logoCell.innerHTML = defaultTokenSVG;
     }
 
-    logoCell.appendChild(img);
     return logoCell;
 }
 // Table Updates
@@ -165,6 +170,136 @@ function createLogoCell(token) {
             }
         });
     }
+    function appendDefaultLogos() {
+        const tokenLogos = document.querySelectorAll(".token_logo");
+        tokenLogos.forEach(img => {
+            if (!img.src || img.src === "null" || img.src === "undefined") {
+                img.src = "assets/img/default.svg";
+                console.log(`Updated src for token_logo to default.svg for element:`, img);
+            }
+        });
+    }
+////
+// Table Sorting
+////
+    function handleHeaderClick(headerType) {
+        return async () => {
+            if (currentSortType === headerType) {
+                sortTable(`${headerType}_reverse`);
+            } else {
+                sortTable(headerType);
+            }
+            highlightRows();
+        };
+    }
+    function sortTable(sortType) {
+        const tableBody = document.getElementById("tokens_body");
+        tableBody.innerHTML = "";
+
+        let validTokens = tokens.filter((token) => {
+            return (
+                token.tokenBalance > 0 &&
+                token.value > 0 &&
+                token.value !== null
+            );
+        });
+
+        switch (sortType) {
+            case "name":
+                validTokens.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+                break;
+            case "name_reverse":
+                validTokens.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+                break;
+            case "tokens_reverse":
+                validTokens.sort((a, b) => {
+                    let aTokens = parseFloat(a.tokenBalance) / Math.pow(10, a.decimals);
+                    let bTokens = parseFloat(b.tokenBalance) / Math.pow(10, b.decimals);
+                    return aTokens - bTokens;
+                });
+                break;
+            case "tokens":
+                validTokens.sort((a, b) => {
+                    let aTokens = parseFloat(a.tokenBalance) / Math.pow(10, a.decimals);
+                    let bTokens = parseFloat(b.tokenBalance) / Math.pow(10, b.decimals);
+                    return bTokens - aTokens;
+                });
+                break;
+            case "value_reverse":
+                validTokens.sort((a, b) => {
+                    let aTokens = parseFloat(a.tokenBalance) / Math.pow(10, a.decimals);
+                    let bTokens = parseFloat(b.tokenBalance) / Math.pow(10, b.decimals);
+                    let aValue = aTokens * a.value;
+                    let bValue = bTokens * b.value;
+                    return aValue - bValue;
+                });
+                break;
+            case "value":
+                validTokens.sort((a, b) => {
+                    let aTokens = parseFloat(a.tokenBalance) / Math.pow(10, a.decimals);
+                    let bTokens = parseFloat(b.tokenBalance) / Math.pow(10, b.decimals);
+                    let aValue = aTokens * a.value;
+                    let bValue = bTokens * b.value;
+                    return bValue - aValue;
+                });
+                break;
+            default:
+                console.warn(`Invalid sortType: ${sortType}`);
+                break;
+        }
+
+        currentSortType = sortType;
+        populateTokensTable(validTokens);
+        updateTableHeader(sortType);
+        cacheUserDetails(null, true);
+    }
+    function insertSortArrow(id, sortType) {
+        const downArrow = '<span class="sort_arrow">▼</span>';
+        const upArrow = '<span class="sort_arrow">▲</span>';
+
+        const headers = document.querySelectorAll("#tokens_table th");
+
+        headers.forEach(header => {
+            const arrow = header.querySelector(".sort_arrow");
+            if (arrow) {
+                arrow.remove();
+            }
+        });
+
+        let arrowHTML;
+        if (sortType.includes("reverse")) {
+            arrowHTML = upArrow;
+        } else {
+            arrowHTML = downArrow;
+        }
+
+        const headerToUpdate = document.getElementById(id);
+        if (headerToUpdate) {
+            headerToUpdate.insertAdjacentHTML("beforeend", arrowHTML);
+        }
+    }
+    function updateTableHeader(sortType) {
+        let headerId;
+
+        switch (sortType) {
+            case "name":
+            case "name_reverse":
+                headerId = "table_name";
+                break;
+            case "tokens":
+            case "tokens_reverse":
+                headerId = "table_tokens";
+                break;
+            case "value":
+            case "value_reverse":
+                headerId = "table_value";
+                break;
+            default:
+                console.warn(`Invalid sortType: ${sortType}`);
+                return;
+        }
+        insertSortArrow(headerId, sortType);
+    }
 ////
 //
 // #endregion Token Table
@@ -200,7 +335,7 @@ function setRootColors(colors = null) {
     animateColorTransition('--light', lightColor, animationDuration);
 
     colors = { main: mainColor, dark: darkColor, light: lightColor };
-    cacheRootColors(colors);
+    cacheUserDetails(colors);
 }
 function animateColorTransition(property, newColor, duration) {
     const currentColor = getComputedStyle(root).getPropertyValue(property).trim();
@@ -282,165 +417,6 @@ function processAndReplaceText(element, newText = null) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-document.addEventListener("backgroundLogoFetchingComplete", () => {
-    const tokenLogos = document.querySelectorAll(".token_logo");
-    tokenLogos.forEach(img => {
-        if (!img.src || img.src === "null") {
-            img.src = "assets/img/default.svg";
-            console.log(`Updated src for token_logo to default.svg for element:`, img);
-        }
-    });
-});
-
-let currentSortType = "value";
-let tableSortTypes = ["name", "name_reverse", "tokens", "tokens_reverse", "value", "value_reverse"];
-
-function sortTable(sortType) {
-    const tableBody = document.getElementById("tokens_body");
-    tableBody.innerHTML = "";
-
-    let validTokens = tokens.filter((token) => {
-        return (
-            token.tokenBalance > 0 &&
-            token.value > 0 &&
-            token.value !== null
-        );
-    });
-
-    switch (sortType) {
-        case "name":
-            validTokens.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-            break;
-        case "name_reverse":
-            validTokens.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
-            break;
-        case "tokens_reverse":
-            validTokens.sort((a, b) => {
-                let aTokens = parseFloat(a.tokenBalance) / Math.pow(10, a.decimals);
-                let bTokens = parseFloat(b.tokenBalance) / Math.pow(10, b.decimals);
-                return aTokens - bTokens;
-            });
-            break;
-        case "tokens":
-            validTokens.sort((a, b) => {
-                let aTokens = parseFloat(a.tokenBalance) / Math.pow(10, a.decimals);
-                let bTokens = parseFloat(b.tokenBalance) / Math.pow(10, b.decimals);
-                return bTokens - aTokens;
-            });
-            break;
-        case "value_reverse":
-            validTokens.sort((a, b) => {
-                let aTokens = parseFloat(a.tokenBalance) / Math.pow(10, a.decimals);
-                let bTokens = parseFloat(b.tokenBalance) / Math.pow(10, b.decimals);
-                let aValue = aTokens * a.value;
-                let bValue = bTokens * b.value;
-                return aValue - bValue;
-            });
-            break;
-        case "value":
-            validTokens.sort((a, b) => {
-                let aTokens = parseFloat(a.tokenBalance) / Math.pow(10, a.decimals);
-                let bTokens = parseFloat(b.tokenBalance) / Math.pow(10, b.decimals);
-                let aValue = aTokens * a.value;
-                let bValue = bTokens * b.value;
-                return bValue - aValue;
-            });
-            break;
-        default:
-            console.warn(`Invalid sortType: ${sortType}`);
-            break;
-    }
-
-    currentSortType = sortType;
-    populateTokensTable(validTokens);
-    updateTableHeader(sortType);
-}
-
-function insertSortArrow(id, sortType) {
-    const downArrow = '<span class="sort_arrow">▼</span>';
-    const upArrow = '<span class="sort_arrow">▲</span>';
-
-    const headers = document.querySelectorAll("#tokens_table th");
-
-    headers.forEach(header => {
-        const arrow = header.querySelector(".sort_arrow");
-        if (arrow) {
-            arrow.remove();
-        }
-    });
-
-    let arrowHTML;
-    if (sortType.includes("reverse")) {
-        arrowHTML = upArrow;
-    } else {
-        arrowHTML = downArrow;
-    }
-
-    const headerToUpdate = document.getElementById(id);
-    if (headerToUpdate) {
-        headerToUpdate.insertAdjacentHTML("beforeend", arrowHTML);
-    }
-}
-function updateTableHeader(sortType) {
-    let headerId;
-
-    switch (sortType) {
-        case "name":
-        case "name_reverse":
-            headerId = "table_name";
-            break;
-        case "tokens":
-        case "tokens_reverse":
-            headerId = "table_tokens";
-            break;
-        case "value":
-        case "value_reverse":
-            headerId = "table_value";
-            break;
-        default:
-            console.warn(`Invalid sortType: ${sortType}`);
-            return;
-    }
-    insertSortArrow(headerId, sortType);
-}
-
-nameHeader.addEventListener('click', async () => { 
-    if (currentSortType === "name") {
-        sortTable("name_reverse");
-    } else {
-        sortTable("name");
-    } 
-    highlightRows();
-});
-tokensHeader.addEventListener('click', async () => { 
-    if (currentSortType === "tokens") {
-        sortTable("tokens_reverse");
-    } else {
-        sortTable("tokens");
-    }
-    highlightRows();
-});
-valueHeader.addEventListener('click', async () => { 
-    if (currentSortType === "value") {
-        sortTable("value_reverse");
-    } else {
-        sortTable("value");
-    }
-    highlightRows();
-});
-
-
-
 document.addEventListener("tokenPriceUpdating", (event) => {
     const { contractAddress } = event.detail;
 
@@ -484,3 +460,36 @@ document.addEventListener("tokenPriceUpdated", (event) => {
         console.warn(`No table row found for contract address: ${contractAddress}`);
     }
 });
+
+
+
+
+
+
+
+
+
+window.addEventListener('load', () => {
+    // Select all elements with a `data-speed` attribute
+    const parallaxElements = document.querySelectorAll('[data-speed]');
+
+    function applyParallax() {
+        parallaxElements.forEach(element => {
+            const speed = parseFloat(element.dataset.speed) || 0.5;
+            const offset = window.scrollY * speed;
+            element.style.transform = `translateY(${-offset}px)`;
+        });
+    }
+
+    // Use requestAnimationFrame for smoother animations
+    function onScroll() {
+        requestAnimationFrame(applyParallax);
+    }
+
+    // Add the scroll event listener
+    window.addEventListener('scroll', onScroll);
+
+    // Initial call to position elements correctly on load
+    applyParallax();
+});
+
