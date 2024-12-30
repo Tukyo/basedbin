@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 1000); // 1 second delay
 });
 
+const enableCameraEffects = true;
+
 const transparent = null;
 
 const tokenImages = [
@@ -85,12 +87,15 @@ const brightnessMultiplier = .55;
 const emissionStrength = 2.5;
 
 const minTokenAmount = 5;
-const maxTokenAmount = 25;
+const maxTokenAmount = 50;
 const spawnIntervalTime = 5000;
 
 const minX = -25, maxX = 25;
 const minY = 20, maxY = 40;
 const minZ = -20, maxZ = 10;
+
+const minScale = 0.05;
+const maxScale = 2.5;
 
 const floorY = -20;
 
@@ -113,7 +118,7 @@ const cameraOptions = {
     bloomStrength: 1.15,
     bloomRadius: 1.5,
     bloomResolution: 64,
-    vignetteStrength: 4.105,
+    vignetteStrength: 3.5,
     vignetteOffset: 1.3,
     focus: 0,
     aperture: 25.0,
@@ -161,6 +166,9 @@ function initThree() {
                         const randomY = Math.random() * (maxY - minY) + minY;
                         const randomZ = Math.random() * (maxZ - minZ) + minZ;
                         model.position.set(randomX, randomY, randomZ);
+
+                        const randomScale = Math.random() * (maxScale - minScale) + minScale;
+                        model.scale.set(randomScale, randomScale, randomScale);                        
 
                         scene.add(model);
                         currentBatch.coins.push(model);
@@ -292,37 +300,38 @@ function initCamera(scene, renderer, options = {}) {
     const renderPass = new THREE.RenderPass(scene, camera);
     composer.addPass(renderPass);
 
-    // Bloom
-    const bloomPass = new THREE.UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
-        options.bloomStrength,
-        options.bloomRadius,
-        options.bloomThreshold,
-        options.bloomResolution
-    );
-    composer.addPass(bloomPass);
+    if (enableCameraEffects) {
+        // Bloom
+        const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            options.bloomStrength,
+            options.bloomRadius,
+            options.bloomThreshold,
+            options.bloomResolution
+        );
+        composer.addPass(bloomPass);
 
-    // FXAA
-    const fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
-    fxaaPass.uniforms['resolution'].value.x = 1 / window.innerWidth;
-    fxaaPass.uniforms['resolution'].value.y = 1 / window.innerHeight;
-    composer.addPass(fxaaPass);
+        // FXAA
+        const fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
+        fxaaPass.uniforms['resolution'].value.x = 1 / window.innerWidth;
+        fxaaPass.uniforms['resolution'].value.y = 1 / window.innerHeight;
+        composer.addPass(fxaaPass);
 
-    // Vignette
-    const vignettePass = new THREE.ShaderPass({
-        uniforms: {
-            tDiffuse: { value: null },
-            offset: { value: options.vignetteOffset },
-            darkness: { value: options.vignetteStrength }
-        },
-        vertexShader: `
+        // Vignette
+        const vignettePass = new THREE.ShaderPass({
+            uniforms: {
+                tDiffuse: { value: null },
+                offset: { value: options.vignetteOffset },
+                darkness: { value: options.vignetteStrength }
+            },
+            vertexShader: `
             varying vec2 vUv;
             void main() {
                 vUv = uv;
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
             }
         `,
-        fragmentShader: `
+            fragmentShader: `
             uniform sampler2D tDiffuse;
             uniform float offset;
             uniform float darkness;
@@ -336,32 +345,32 @@ function initCamera(scene, renderer, options = {}) {
                 gl_FragColor = color;
             }
         `,
-    });
-    composer.addPass(vignettePass);
+        });
+        composer.addPass(vignettePass);
 
-    /**********************************************************
-     * Depth of Field Pass with Real Depth Sampling
-     **********************************************************/
-    const depthOfFieldPass = new THREE.ShaderPass({
-        uniforms: {
-            tDiffuse: { value: null },
-            tDepth: { value: null }, // We'll feed in composer.renderTarget.depthTexture
-            cameraNear: { value: camera.near },
-            cameraFar: { value: camera.far },
-            focus: { value: options.focus },
-            aperture: { value: options.aperture },
-            maxBlur: { value: options.maxBlur },
-            depthRange: { value: options.depthRange },
-            dofResolution: { value: options.dofResolution }
-        },
-        vertexShader: `
+        /**********************************************************
+         * Depth of Field Pass with Real Depth Sampling
+         **********************************************************/
+        const depthOfFieldPass = new THREE.ShaderPass({
+            uniforms: {
+                tDiffuse: { value: null },
+                tDepth: { value: null }, // We'll feed in composer.renderTarget.depthTexture
+                cameraNear: { value: camera.near },
+                cameraFar: { value: camera.far },
+                focus: { value: options.focus },
+                aperture: { value: options.aperture },
+                maxBlur: { value: options.maxBlur },
+                depthRange: { value: options.depthRange },
+                dofResolution: { value: options.dofResolution }
+            },
+            vertexShader: `
             varying vec2 vUv;
             void main() {
                 vUv = uv;
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
             }
         `,
-        fragmentShader: `
+            fragmentShader: `
             // Converts [0..1] depth to view Z distance
             float perspectiveDepthToViewZ(const in float invClipZ, const in float near, const in float far) {
                 return (near * far) / ((far - near) * invClipZ - far);
@@ -429,10 +438,11 @@ function initCamera(scene, renderer, options = {}) {
                 gl_FragColor = mix(sceneColor, blurredColor, blurFactor);
             }
         `
-    });
-    // Bind the depth texture from our main render target
-    depthOfFieldPass.uniforms.tDepth.value = renderTarget.depthTexture;
-    composer.addPass(depthOfFieldPass);
+        });
+        // Bind the depth texture from our main render target
+        depthOfFieldPass.uniforms.tDepth.value = renderTarget.depthTexture;
+        composer.addPass(depthOfFieldPass);
+    }
     mainCamera = camera;
     return { camera, composer };
 }
@@ -501,7 +511,7 @@ function applyTextureToModel(model, imagePath = null) {
 /*******************************************************************/
 //////////////////////////////////////////////////////////////////////
 
-document.addEventListener('click', shoot);
+// document.addEventListener('click', shoot);
 async function shoot(event) {
     const loader = new THREE.GLTFLoader();
     const projectileModel = await new Promise((resolve, reject) => { loader.load(projectileMesh, resolve, undefined, reject); });
@@ -623,7 +633,6 @@ async function spawnVFX(vector3) {
     const vfxMixer = new THREE.AnimationMixer(vfx);
 
     vfxModel.animations.forEach((clip) => {
-        console.log("Configuring VFX animation: " + clip.name);
         const action = vfxMixer.clipAction(clip);
         action.loop = THREE.LoopOnce;
         action.clampWhenFinished = true;

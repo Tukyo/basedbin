@@ -47,6 +47,8 @@ const connectButton = document.getElementById("connect_button");
 const startButton = document.getElementById("start_button");
 const recycleButton = document.getElementById("recycle_button");
 const processButton = document.getElementById("process_button");
+const tokensPageButton = document.getElementById("tokens_button");
+const premiumPageButton = document.getElementById("premium_button");
 ////
 //
 //// Containers
@@ -62,16 +64,23 @@ const toggleSwitch = document.getElementById("switch");
 ////
 //
 //// Table
+const table = document.getElementById("tokens_table");
 const tableBody = document.getElementById("tokens_body");
-const nameHeader = document.getElementById("table_name");
-const tokensHeader = document.getElementById("table_tokens");
-const valueHeader = document.getElementById("table_value");
+const tokensMask = document.querySelector(".tokens_mask");
+const premiumMask = document.querySelector(".premium_mask");
+const nameHeader = document.getElementById("header_name");
+const tokensHeader = document.getElementById("header_tokens");
+const valueHeader = document.getElementById("header_value");
 let currentSortType = "value";
 ////
 //
 ////
-// Tokens
+// Contracts
 const wethAddress = "0x4200000000000000000000000000000000000006"; // BASE
+const bbApprover = "0x72d90623D29f9d0232Bc6d971c796AC071F39DaB";
+const swapRouter02 = "0x2626664c2603336E57B271c5C0b26F421741e481";
+const uniswapQuoterAddress = "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a";
+const feeCollector = "0xaa7De8cb38CC1463f183A495c9E3e5A3c7F1ca07" //TODO: Update to correct feeCollector address
 let tokens = [];
 // let pools = [];
 let currentETHPrice = null;
@@ -238,6 +247,7 @@ let currentETHPrice = null;
             }
             tokens = tokens.filter((token) => token !== null);
             console.log("Tokens:", tokens);
+            if (tokens.length === 0) { console.log("No tokens found..."); }
             document.dispatchEvent(new CustomEvent("tokenDetailsFetched", { detail: { tokens } }));
             if (!isUsingTokenCache) { cacheTokenDetails(walletAddress, tokens); fetchLogosBackground(15000, 3); }
             return tokens;
@@ -562,6 +572,18 @@ let currentETHPrice = null;
         localStorage.setItem('tokenDetailsCache', JSON.stringify(tokenDetailsCache));
         console.log(`Token details cached for wallet: ${truncate(checksummedAddress)}${isStale ? " (replaced due to staleness)" : ""}`);
     }
+    function clearCachedTokens(walletAddress) {
+        const checksummedAddress = checksumAddress(walletAddress);
+        const tokenDetailsCache = JSON.parse(localStorage.getItem('tokenDetailsCache')) || {};
+    
+        if (tokenDetailsCache[checksummedAddress]) {
+            delete tokenDetailsCache[checksummedAddress];
+            localStorage.setItem('tokenDetailsCache', JSON.stringify(tokenDetailsCache));
+            console.log(`Cache cleared for wallet: ${truncate(checksummedAddress)}`);
+        } else {
+            console.log(`No cache found for wallet: ${truncate(checksummedAddress)}`);
+        }
+    }    
     //
     function fetchTokenCache(walletAddress) {
         const checksummedAddress = checksumAddress(walletAddress);

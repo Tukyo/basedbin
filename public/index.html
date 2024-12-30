@@ -19,6 +19,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.0/ethers.umd.min.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
+
     <!-- Core Three.js -->
     <script src="https://cdn.jsdelivr.net/npm/three@latest/build/three.min.js"></script>
 
@@ -143,34 +147,56 @@
                 <li><a href="#pricing_section">Pricing</a></li>
             </ul>
         </nav>
+        <div class="hamburger_menu"><i class="fa-solid fa-bars"></i></div>
         <button class="pulse" id="connect_button">Connect Wallet</button>
     </header>
     <!-- #endregion Header -->
 
     <canvas id="three_js_canvas"></canvas>
+
     <!-- #region Main Section -->
     <section id="main_section">
         <div class="container" id="home_container">
             <h1 data-speed="0.15">Based Bin</h1>
-            <p data-speed="0.1">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will automagically
+            <p data-speed="0.1">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it
+                will automagically
                 sell any assets below that threshold!</p>
-            <button class="pulse" id="start_button" data-speed="0.075">Get Started</button>
+            <button class="pulse" id="start_button" data-speed="0.075" data-ghost="true">Get Started</button>
         </div>
+
+        <!-- #region Recycle Container -->
         <div class="container" id="recycle_container" style="display: none;">
             <div class="container" id="tokens">
-                <div class="tokens_mask">
+                <div class="pages">
+                    <button class="page_button left_page_selected" id="tokens_button">Tokens</button>
+                    <button class="page_button page_unselected" id="premium_button">Premium</button>
+                </div>
+                <div class="tokens_mask show">
                     <table id="tokens_table">
                         <thead>
                             <tr>
-                                <th>Logo</th>
-                                <th id="table_name" class="table_sort_title">Name</th>
-                                <th>Contract</th>
-                                <th id="table_tokens" class="table_sort_title">Tokens</th>
-                                <th id="table_value" class="table_sort_title">Value</th>
+                                <th id="header_logo" class="table_logo table_sort_title">Logo</th>
+                                <th id="header_name" class="table_name table_sort_title">Name</th>
+                                <th id="header_contract" class="table_contract table_sort_title">Contract</th>
+                                <th id="header_tokens" class="table_tokens table_sort_title">Tokens</th>
+                                <th id="header_value" class="table_value table_sort_title">Value</th>
                             </tr>
                         </thead>
                         <tbody id="tokens_body"></tbody>
                     </table>
+                    <div class="matter_container" id="matter_container">
+                        <canvas id="matter_canvas"></canvas>
+                    </div>
+                </div>
+                <div class="premium_mask hide" style="display: none;">
+                    <div id="premium_container">
+                        <div class="premium">
+                            <div class="premium_img">
+                                <img src="https://coin-images.coingecko.com/coins/images/52264/large/pic.jpg?1732867759" class="token_logo">
+                            </div>
+                            <div class="premium_details"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="container" id="options">
@@ -195,6 +221,9 @@
             <p>Disclaimer: The value displayed of your held tokens may vary. All tokens might not populate initially,
                 please refresh your wallet connection if you face issues. Experimental tool, use at your own risk!</p>
         </div>
+        <!-- #endregion Recycle Container -->
+
+        <!-- #region Scroll Prompt -->
         <div id="scroll_prompt">
             <div class="scroll_prompt_animate"><svg width="12" height="12" viewBox="0 0 24 24" fill="black"
                     xmlns="http://www.w3.org/2000/svg">
@@ -203,6 +232,8 @@
                         fill="white"></path>
                 </svg></div>
         </div>
+        <!-- #endregion Scroll Prompt -->
+
     </section>
     <!-- #endregion Main Section -->
 
@@ -212,7 +243,8 @@
             <div class="about_content">
                 <div class="about_left">
                     <h2 data-speed="0.1">Connect Wallet</h2>
-                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
+                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold,
+                        and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
@@ -226,7 +258,8 @@
                 </div>
                 <div class="about_right">
                     <h2 data-speed="0.1">Set Threshold</h2>
-                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
+                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold,
+                        and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
@@ -234,7 +267,8 @@
             <div class="about_content">
                 <div class="about_left">
                     <h2 data-speed="0.1">Recycle</h2>
-                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold, and it will
+                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold,
+                        and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
@@ -269,7 +303,9 @@
     <!-- #endregion Footer -->
 </body>
 <script src="scripts/global.js"></script>
+<script src="scripts/abi.js"></script>
 <script src="scripts/walletconnect.js"></script>
+<script src="scripts/recycle.js"></script>
 <script src="scripts/interface.js"></script>
 <script src="scripts/3d.js"></script>
 
