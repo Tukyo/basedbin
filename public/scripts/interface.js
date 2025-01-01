@@ -16,6 +16,12 @@ thresholdInput.addEventListener("input", () => { currentThreshold = parseFloat(t
 
 tokensPageButton.addEventListener('click', () => { toggleTablePage('tokens'); });
 premiumPageButton.addEventListener('click', () => { toggleTablePage('deposits'); });
+refreshTokensButton.addEventListener('click', async () => { 
+    const clearedCache = await clearCachedTokens(connectedWallet);
+    if (!clearedCache) { return; }
+    
+    await getTokens(true);
+});
 
 startButton.addEventListener('click', async () => { getStarted(); });
 nameHeader.addEventListener('click', handleHeaderClick("name"));
@@ -229,7 +235,7 @@ function mobileControls() {
         const tokenLogos = document.querySelectorAll(".token_logo");
         tokenLogos.forEach(img => {
             if (!img.src || img.src === "null" || img.src === "undefined") {
-                img.src = "assets/img/default.svg";
+                img.src = "../assets/img/default.svg";
                 console.log(`Updated src for token_logo to default.svg for element:`, img);
             }
         });
@@ -265,6 +271,40 @@ function mobileControls() {
         } else {
             console.warn(`No table row found for contract address: ${contractAddress}`);
         }
+    }
+    function showLoaderRow(table) {
+        table.innerHTML = "";
+
+        const row = document.createElement("tr");
+        row.classList.add("loader_row");
+
+        const logoLoaderCell = document.createElement("td");
+        logoLoaderCell.classList.add("list_cell", "loader_cell");
+        toggleLoader(logoLoaderCell, true);
+
+        const nameLoaderCell = document.createElement("td");
+        nameLoaderCell.classList.add("list_cell", "loader_cell");
+        toggleLoader(nameLoaderCell, true);
+
+        const contractLoaderCell = document.createElement("td");
+        contractLoaderCell.classList.add("list_cell", "loader_cell");
+        toggleLoader(contractLoaderCell, true);
+
+        const tokensLoaderCell = document.createElement("td");
+        tokensLoaderCell.classList.add("list_cell", "loader_cell");
+        toggleLoader(tokensLoaderCell, true);
+
+        const valueLoaderCell = document.createElement("td");
+        valueLoaderCell.classList.add("list_cell", "loader_cell");
+        toggleLoader(valueLoaderCell, true);
+
+        row.appendChild(logoLoaderCell);
+        row.appendChild(nameLoaderCell);
+        row.appendChild(contractLoaderCell);
+        row.appendChild(tokensLoaderCell);
+        row.appendChild(valueLoaderCell);
+
+        table.appendChild(row);
     }
 ////
 // #endregion Table Updates

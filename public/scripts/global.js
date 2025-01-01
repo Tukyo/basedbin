@@ -1,4 +1,6 @@
-document.addEventListener('DOMContentLoaded', function () { console.log('global.js loaded...'); });
+document.addEventListener('DOMContentLoaded', function () { console.log('global.js loaded...'); detectPageFocus(); });
+document.addEventListener("visibilitychange", detectPageFocus);
+let pageFocused = true;
 //// 
 // Wallet Connection
 let isConnected = false;
@@ -13,7 +15,8 @@ let premiumBalances = [];
 //
 ////
 // Cache
-const cacheStale = 36000000000; // 1 hour
+const cacheStale = 3600000;
+const cacheFresh = 300000;
 //
 // Chain
 const chainID = "0x2105";
@@ -49,9 +52,11 @@ const recycleButton = document.getElementById("recycle_button");
 const processButton = document.getElementById("process_button");
 const tokensPageButton = document.getElementById("tokens_button");
 const premiumPageButton = document.getElementById("premium_button");
+const refreshTokensButton = document.getElementById("refresh_tokens");
 ////
 //
 //// Containers
+const mainSection = document.getElementById("main_section");
 const recycleContainer = document.getElementById("recycle_container");
 const homeContainer = document.getElementById("home_container");
 ////
@@ -126,11 +131,17 @@ let currentETHPrice = null;
         if (!element) return;
         if (isEnabled) { element.innerHTML = loaderHTML; } else { element.innerHTML = newText; }
     }
+    function detectPageFocus() {
+        pageFocused = document.visibilityState === "visible";
+        if (pageFocused) console.log(`Page Focused...`); else console.log(`Page Unfocused...`);
+    }
     // #endregion Interface
 ////
     // #region Crypto Details
-    async function getTokens() {
+    async function getTokens(showLoading = false) {
         if (!window.ethereum) { return; }
+
+        if (showLoading) { showLoaderRow(tableBody); }
 
         console.log("Fetching token details...");
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -161,6 +172,12 @@ let currentETHPrice = null;
             if (data !== null && isUsingTokenCache === false) {
                 if (currentETHPrice === null) { await getETHPrice(); }
 
+                const contractAddresses = data.result.tokenBalances
+                .filter((token) => parseInt(token.tokenBalance, 16) !== 0)
+                .map((token) => token.contractAddress);
+
+                const databaseTokenData = await fetchTokensFromDatabase(contractAddresses);
+
                 tokens = await Promise.all(
                     data.result.tokenBalances.map(async (token) => {
                         const contractAddress = token.contractAddress;
@@ -175,7 +192,7 @@ let currentETHPrice = null;
                             let chosenPool = null;
                             let image = null;
 
-                            const result = await fetchTokenFromDatabase(contractAddress);
+                            const result = databaseTokenData[contractAddress];
 
                             if (result) {
                                 name = result.name;
@@ -572,18 +589,34 @@ let currentETHPrice = null;
         localStorage.setItem('tokenDetailsCache', JSON.stringify(tokenDetailsCache));
         console.log(`Token details cached for wallet: ${truncate(checksummedAddress)}${isStale ? " (replaced due to staleness)" : ""}`);
     }
-    function clearCachedTokens(walletAddress) {
-        const checksummedAddress = checksumAddress(walletAddress);
-        const tokenDetailsCache = JSON.parse(localStorage.getItem('tokenDetailsCache')) || {};
+    //
+    async function clearCachedTokens(walletAddress, force = false) {
+        return new Promise((resolve) => {
+            const checksummedAddress = checksumAddress(walletAddress);
+            const tokenDetailsCache = JSON.parse(localStorage.getItem('tokenDetailsCache')) || {};
     
-        if (tokenDetailsCache[checksummedAddress]) {
-            delete tokenDetailsCache[checksummedAddress];
-            localStorage.setItem('tokenDetailsCache', JSON.stringify(tokenDetailsCache));
-            console.log(`Cache cleared for wallet: ${truncate(checksummedAddress)}`);
-        } else {
-            console.log(`No cache found for wallet: ${truncate(checksummedAddress)}`);
-        }
-    }    
+            isUsingTokenCache = false;
+    
+            if (tokenDetailsCache[checksummedAddress]) {
+                const cacheTimestamp = tokenDetailsCache[checksummedAddress].timestamp;
+                const isCacheOldEnough = (Date.now() - cacheTimestamp) > cacheFresh;
+    
+                if (force || isCacheOldEnough) {
+                    delete tokenDetailsCache[checksummedAddress];
+                    localStorage.setItem('tokenDetailsCache', JSON.stringify(tokenDetailsCache));
+                    if (!force) console.log(`Old cache cleared for wallet: ${truncate(checksummedAddress)}`);
+                    else console.log(`Forced cache clear for wallet: ${truncate(checksummedAddress)}`);
+                    resolve(true); // Cache cleared
+                } else {
+                    console.log(`Cache for wallet: ${truncate(checksummedAddress)} was not cleared.`);
+                    resolve(false); // Cache not cleared
+                }
+            } else {
+                console.log(`No cache found for wallet: ${truncate(checksummedAddress)}`);
+                resolve(false); // Cache not found
+            }
+        });
+    }
     //
     function fetchTokenCache(walletAddress) {
         const checksummedAddress = checksumAddress(walletAddress);
@@ -591,6 +624,11 @@ let currentETHPrice = null;
         if (cache && cache[checksummedAddress]) {
             const { data, timestamp } = cache[checksummedAddress];
             const isStale = Date.now() - timestamp > cacheStale;
+
+            const cacheAgeMinutes = Math.floor((Date.now() - timestamp) / 60000);
+            console.log(`Cache Age: ${cacheAgeMinutes} minutes`);
+            const minutesToStale = Math.floor((cacheStale - (Date.now() - timestamp)) / 60000);
+            console.log(`Minutes to Stale: ${minutesToStale}`);
 
             if (!isStale) {
                 console.log(`Loaded token details from cache for wallet: ${truncate(checksummedAddress)}`);
@@ -721,25 +759,24 @@ let currentETHPrice = null;
         } catch (error) { console.error(`Error updating token image for ${contractAddress}:`, error); }
     }
     //
-    async function fetchTokenFromDatabase(contractAddress) {
+    async function fetchTokensFromDatabase(contractAddresses) {
         try {
-            const response = await fetch(`/api/fetchToken?contractAddress=${contractAddress}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            const response = await fetch('/api/fetchTokens', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ contractAddresses }),
             });
-
-            if (response.status === 404) { console.log(`Token not found in database: ${contractAddress}`); return null; }
-
-            if (!response.ok) { throw new Error(`Failed to fetch token: ${response.statusText}`); }
-
+    
+            if (!response.ok) {
+                throw new Error(`Failed to fetch tokens: ${response.statusText}`);
+            }
+    
             const tokenData = await response.json();
-            console.log(`Token data fetched successfully for ${contractAddress}:`, tokenData);
+            console.log(`Token data fetched successfully for addresses:`, tokenData);
             return tokenData;
         } catch (error) {
-            console.error(`Error fetching token data for ${contractAddress}:`, error);
-            return null;
+            console.error(`Error fetching token data:`, error);
+            return {};
         }
     }
     // #endregion Token Persistence

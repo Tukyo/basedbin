@@ -168,7 +168,9 @@
         <div class="container" id="recycle_container" style="display: none;">
             <div class="container" id="tokens">
                 <div class="pages">
-                    <button class="page_button left_page_selected" id="tokens_button">Tokens</button>
+                    <button class="page_button left_page_selected" id="tokens_button">
+                        <span id="refresh_tokens"><i class="fa-solid fa-arrow-rotate-right"></i></span>
+                        <span style="margin: 0px auto;">Tokens</span></button>
                     <button class="page_button page_unselected" id="premium_button">Premium</button>
                 </div>
                 <div class="tokens_mask show">
@@ -191,9 +193,11 @@
                 <div class="premium_mask hide" style="display: none;">
                     <div id="premium_container">
                         <div class="premium">
-                            <div class="premium_img">
-                                <img src="https://coin-images.coingecko.com/coins/images/52264/large/pic.jpg?1732867759" class="token_logo">
-                            </div>
+                            <button class="premium_button" id="premium_0">Get Premium
+                                <div class="premium_img">
+                                    <img src="assets/img/tokens/01.webp" class="premium_logo">
+                                </div>
+                            </button>
                             <div class="premium_details"></div>
                         </div>
                     </div>
@@ -308,6 +312,9 @@
 <script src="scripts/recycle.js"></script>
 <script src="scripts/interface.js"></script>
 <script src="scripts/3d.js"></script>
+
+<script src="scripts/wavesurfer.min.js"></script>
+<script src="scripts/audio.js"></script>
 
 </html>
 </div>

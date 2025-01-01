@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 
 const ethers = require('ethers');
@@ -15,13 +16,39 @@ require('dotenv').config();
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
+// CORS Configuration
+const allowedOrigins = ['https://basedbin-b085d.web.app', 'https://basedbin.xyz', 'http://localhost:5000'];
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.error(`Origin: ${origin} not allowed by CORS`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200 // For legacy browsers
+};
+
+const rateLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => { res.status(429).json({ error: 'Too many requests...' }); }
+});
+
 const app = express();
 app.use(express.json());
-app.use((req, res, next) => {
-    const basePath = req.baseUrl || '/'; // Detect base path dynamically
-    app.use(basePath, express.static(path.join(__dirname, '../public')));
-    next();
-});
+app.use(cors(corsOptions));
+
+// // Handle preflight requests
+// app.options('/api/*', cors(corsOptions));
+
+// Serve static files
+app.use(express.static(path.join(__dirname, '../public')));
 
 const baseEndpoint = process.env.BASE_ENDPOINT;
 const baseProvider = new ethers.JsonRpcProvider(baseEndpoint);
@@ -50,7 +77,7 @@ const uniswapV3PoolABI = abis.uniswapV3Pool;
 //
 // #region ENS
 ////
-    app.get('/api/resolveENS', async (req, res) => {
+    app.get('/api/resolveENS', rateLimiter, async (req, res) => {
         try {
             const address = req.query.address;
             if (!address) {
@@ -83,7 +110,7 @@ const uniswapV3PoolABI = abis.uniswapV3Pool;
 //
 // #region ETH Price
 ////
-    app.get('/api/getETHPrice', async (req, res) => {
+    app.get('/api/getETHPrice', rateLimiter, async (req, res) => {
         try {
             for (const provider of mainnetProviders) {
                 try {
@@ -145,28 +172,31 @@ const uniswapV3PoolABI = abis.uniswapV3Pool;
         }
     });
     //
-    app.get('/api/fetchToken', async (req, res) => {
+    app.post('/api/fetchTokens', async (req, res) => {
         try {
-            const { contractAddress } = req.query;
+            const { contractAddresses } = req.body;
     
-            if (!contractAddress) { return res.status(400).json({ error: 'No Contract' }); }
-    
-            const checksummedAddress = ethers.getAddress(contractAddress);
-    
-            console.log(`Fetching token data for contract: ${checksummedAddress}`);
-            const tokenRef = db.collection('tokens').doc(checksummedAddress);
-            const docSnapshot = await tokenRef.get();
-    
-            if (!docSnapshot.exists) {
-                console.log(`No token data found for: ${checksummedAddress}`);
-                return res.status(404).json({ error: 'Token not found' });
+            if (!contractAddresses || !Array.isArray(contractAddresses)) {
+                return res.status(400).json({ error: 'Invalid contractAddresses array' });
             }
     
-            const tokenData = docSnapshot.data();
-            console.log(`Token data fetched successfully for ${checksummedAddress}`);
+            console.log(`Fetching data for contracts: ${contractAddresses}`);
+            const tokenRefs = contractAddresses.map((address) =>
+                db.collection('tokens').doc(ethers.getAddress(address)).get()
+            );
+    
+            const snapshots = await Promise.all(tokenRefs);
+            const tokenData = {};
+    
+            snapshots.forEach((snapshot, index) => {
+                if (snapshot.exists) {
+                    tokenData[contractAddresses[index]] = snapshot.data();
+                }
+            });
+    
             res.status(200).json(tokenData);
         } catch (error) {
-            console.error('Error fetching token data:', error);
+            console.error('Error fetching tokens:', error);
             res.status(500).json({ error: 'Internal server error' });
         }
     });
@@ -417,7 +447,7 @@ const uniswapV3PoolABI = abis.uniswapV3Pool;
 //
 // #region Premium
 ////
-    app.post("/api/getPremiumBalances", async (req, res) => {
+    app.post("/api/getPremiumBalances", rateLimiter, async (req, res) => {
         try {
         const { walletAddress } = req.body;
     

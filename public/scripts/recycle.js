@@ -4,13 +4,19 @@ processButton.addEventListener('click', async () => { prepareTokensForSwap(); })
 
 let transactionDeadline = "10";
 let maxSlippage = 0.01;
-
 let recycleTokens = [];
+
+/******************************************************************************
+ * [0] Prepare Tokens for Recycling
+ * - This function will step through the process of recycling tokens
+ * - It awaits each function one-by-one to ensure the process is completed
+ *****************************************************************************/
 async function prepareTokensForSwap() {
     if (!window.ethereum) { console.log("No Ethereum provider found..."); return; }
     // initializeMatterJS('.matter_container', 'matter_canvas');
 
-    clearCachedTokens(connectedWallet);
+    const cacheCleared = await clearCachedTokens(connectedWallet, true);
+    if (!cacheCleared) { return; }
 
     // [1] -> Get all contracts that meet the threshold
     const contractAddresses = getThresholdContracts();
@@ -101,20 +107,22 @@ async function batchApprove() {
     const contracts = recycleTokens.map(token => new ethers.Contract(token.contractAddress, ERC_20, signer));
     const allowances = await Promise.all(contracts.map(contract => contract.allowance(walletAddress, swapRouter02)));
 
-    const approvalPromises = allowances.map((allowance, index) => {
+    const approvalPromises = allowances.map(async (allowance, index) => {
         if (allowance.lt(recycleTokens[index].tokenBalance)) {
             const approveAmount = ethers.utils.parseUnits(recycleTokens[index].tokenBalance, recycleTokens[index].decimals);
-            return contracts[index].approve(swapRouter02, approveAmount)
-                .then(tx => {
-                    console.log("Approved:", tx);
-                    return { status: "success", tx };
-                })
-                .catch(err => {
-                    console.error("Approval failed:", err);
-                    return { status: "failed", error: err };
-                });
+            try {
+                const tx = await contracts[index].approve(swapRouter02, approveAmount);
+                console.log(`Approval transaction sent for token: ${recycleTokens[index].symbol}`, tx);
+                await tx.wait();
+                console.log(`Approval confirmed for token: ${recycleTokens[index].symbol}`);
+                return { status: "success", tx };
+            } catch (err) {
+                console.error(`Approval failed for token: ${recycleTokens[index].symbol}`, err);
+                return { status: "failed", error: err };
+            }
         } else {
-            return Promise.resolve({ status: "not_needed" });
+            console.log(`Approval not needed for token: ${recycleTokens[index].symbol}`);
+            return { status: "not_needed" };
         }
     });
 

@@ -28,7 +28,6 @@
 
 .hide {
     animation: hide 0.5s ease-in-out forwards;
-    opacity: 0;
 }
 
 @keyframes hide {
@@ -45,6 +44,7 @@
     width: 1.75rem;
     aspect-ratio: 1;
     border-radius: 50%;
+    margin: auto;
     background:
         radial-gradient(farthest-side, var(--main) 94%, #0000) top/6px 6px no-repeat,
         conic-gradient(#0000 30%, var(--main));

@@ -11,29 +11,29 @@ const enableCameraEffects = true;
 const transparent = null;
 
 const tokenImages = [
-    'assets/img/tokens/01.webp',
-    'assets/img/tokens/02.webp',
-    'assets/img/tokens/03.webp',
-    'assets/img/tokens/04.webp',
-    'assets/img/tokens/05.webp',
-    'assets/img/tokens/06.webp',
-    'assets/img/tokens/07.webp',
-    'assets/img/tokens/08.webp',
-    'assets/img/tokens/09.webp',
-    'assets/img/tokens/10.webp',
-    'assets/img/tokens/11.webp',
-    'assets/img/tokens/13.webp',
-    'assets/img/tokens/14.webp',
-    'assets/img/tokens/15.webp',
-    'assets/img/tokens/16.webp',
-    'assets/img/tokens/17.webp',
-    'assets/img/tokens/18.webp',
-    'assets/img/tokens/19.webp',
-    'assets/img/tokens/20.webp',
-    'assets/img/tokens/21.webp',
-    'assets/img/tokens/22.webp',
-    'assets/img/tokens/23.webp',
-    'assets/img/tokens/24.webp'
+    '../assets/img/tokens/01.webp',
+    '../assets/img/tokens/02.webp',
+    '../assets/img/tokens/03.webp',
+    '../assets/img/tokens/04.webp',
+    '../assets/img/tokens/05.webp',
+    '../assets/img/tokens/06.webp',
+    '../assets/img/tokens/07.webp',
+    '../assets/img/tokens/08.webp',
+    '../assets/img/tokens/09.webp',
+    '../assets/img/tokens/10.webp',
+    '../assets/img/tokens/11.webp',
+    '../assets/img/tokens/13.webp',
+    '../assets/img/tokens/14.webp',
+    '../assets/img/tokens/15.webp',
+    '../assets/img/tokens/16.webp',
+    '../assets/img/tokens/17.webp',
+    '../assets/img/tokens/18.webp',
+    '../assets/img/tokens/19.webp',
+    '../assets/img/tokens/20.webp',
+    '../assets/img/tokens/21.webp',
+    '../assets/img/tokens/22.webp',
+    '../assets/img/tokens/23.webp',
+    '../assets/img/tokens/24.webp'
 ]
 function getRandomTokenImage() { return tokenImages[Math.floor(Math.random() * tokenImages.length)]; }
 
@@ -50,9 +50,9 @@ const konamiCode = [
     'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA', 'Enter'
 ];
 
-const projectileMesh = 'assets/projectile.glb';
-const coinMesh = 'assets/coin_animation.glb';
-const coinVFX = 'assets/coin_destroy.glb';
+const projectileMesh = '../assets/projectile.glb';
+const coinMesh = '../assets/coin_animation.glb';
+const coinVFX = '../assets/coin_destroy.glb';
 //////////////////////////////////////////////////////////////////////
 /*******************************************************************/
 //////////////////////////////////////////////////////////////////////
@@ -155,6 +155,7 @@ function initThree() {
         coinMesh,
         (gltf) => {
             function spawnCoins() {
+                if (!pageFocused) { console.log("Animation paused..."); return; }
                 const tokenAmount = Math.floor(Math.random() * (maxTokenAmount - minTokenAmount + 1)) + minTokenAmount;
                 const batchTimestamp = Date.now();
                 const currentBatch = { coins: [], timestamp: batchTimestamp };
@@ -511,7 +512,7 @@ function applyTextureToModel(model, imagePath = null) {
 /*******************************************************************/
 //////////////////////////////////////////////////////////////////////
 
-// document.addEventListener('click', shoot);
+let gameActive = false;
 async function shoot(event) {
     const loader = new THREE.GLTFLoader();
     const projectileModel = await new Promise((resolve, reject) => { loader.load(projectileMesh, resolve, undefined, reject); });
@@ -583,6 +584,15 @@ function listenForKonamiCode() {
             if (currentPosition === konamiCode.length) {
                 console.log("Code entered!");
                 document.addEventListener('click', shoot);
+                if (!gameActive) {
+                    mainSection.classList.add('hide');
+                    startLoop(track);
+                    gameActive = true;
+                } else {
+                    mainSection.classList.remove('hide');
+                    stopLoop();
+                    gameActive = false;
+                }
                 currentPosition = 0;
             } else {
                 timer = setTimeout(() => {
