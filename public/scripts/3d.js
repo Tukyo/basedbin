@@ -102,6 +102,7 @@ const floorY = -20;
 const gravity = 0.15;
 const minGravMult = 0.35;
 const maxGravMult = 0.75;
+const gravityMultipliers = [];
 
 /********************************************************************
  * 1) Default Camera Options
@@ -148,8 +149,6 @@ function initThree() {
     directionalLight.position.set(5, 10, 7.5);
     scene.add(directionalLight);
 
-    const gravityMultipliers = [];
-
     const loader = new THREE.GLTFLoader();
     loader.load(
         coinMesh,
@@ -169,7 +168,7 @@ function initThree() {
                         model.position.set(randomX, randomY, randomZ);
 
                         const randomScale = Math.random() * (maxScale - minScale) + minScale;
-                        model.scale.set(randomScale, randomScale, randomScale);                        
+                        model.scale.set(randomScale, randomScale, randomScale);
 
                         scene.add(model);
                         currentBatch.coins.push(model);
@@ -211,6 +210,8 @@ function initThree() {
 
                         const randomGravityMultiplier = Math.random() * (maxGravMult - minGravMult) + minGravMult;
                         gravityMultipliers.push(randomGravityMultiplier);
+                        model.userData.gravityMultiplier = randomGravityMultiplier;
+                        model.userData.ySpeed = gravity * randomGravityMultiplier;
                     } else {
                         console.error('obj_coin not found in the loaded GLB file.');
                     }
@@ -252,8 +253,9 @@ function initThree() {
             });
         }
         coinBatches.forEach((batch) => {
-            batch.coins = batch.coins.filter((coin, index) => {
-                const gravityEffect = gravity * gravityMultipliers[index];
+            batch.coins = batch.coins.filter((coin) => {
+                const gravityEffect = gravity * coin.userData.gravityMultiplier;
+                coin.userData.ySpeed = gravityEffect;
                 coin.position.y -= gravityEffect;
 
                 if (coin.position.y <= floorY) {
@@ -512,7 +514,25 @@ function applyTextureToModel(model, imagePath = null) {
 /*******************************************************************/
 //////////////////////////////////////////////////////////////////////
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 let gameActive = false;
+let score = 0;
+const game_container = document.getElementById('game_container');
+const game_score_value = document.getElementById('game_score_value');
 async function shoot(event) {
     const loader = new THREE.GLTFLoader();
     const projectileModel = await new Promise((resolve, reject) => { loader.load(projectileMesh, resolve, undefined, reject); });
@@ -543,6 +563,7 @@ async function shoot(event) {
 
     const duration = 0.5; // Basically speed
     const startTime = performance.now();
+    let collisionDetected = false;
 
     function animateProjectile() {
         const elapsed = (performance.now() - startTime) / 1000;
@@ -552,6 +573,7 @@ async function shoot(event) {
         const projectileBoundingBox = new THREE.Box3().setFromObject(projectile);
         coinBatches.forEach((batch, batchIndex) => {
             batch.coins.forEach((coin, coinIndex) => {
+                if (collisionDetected) return;
                 const coinBoundingBox = new THREE.Box3().setFromObject(coin);
                 if (projectileBoundingBox.intersectsBox(coinBoundingBox)) {
                     console.log(`Collision detected: Projectile and Coin ${coinIndex} in Batch ${batchIndex}`);
@@ -559,13 +581,18 @@ async function shoot(event) {
                     mainScene.remove(projectile);
                     batch.coins.splice(coinIndex, 1);
                     spawnVFX(coin.position);
+                    const coinDetails = getCoinDetails(coin);
+                    updateScore(coinDetails);
+                    collisionDetected = true;
                 }
             });
         });
-        if (t < 1) {
+        
+        if (!collisionDetected && t < 1) {
             requestAnimationFrame(animateProjectile);
-        } else {
+        } else if (!collisionDetected) { // Miss
             mainScene.remove(projectile);
+            updateScore(null);
         }
     }
     animateProjectile();
@@ -584,15 +611,7 @@ function listenForKonamiCode() {
             if (currentPosition === konamiCode.length) {
                 console.log("Code entered!");
                 document.addEventListener('click', shoot);
-                if (!gameActive) {
-                    mainSection.classList.add('hide');
-                    startLoop(track);
-                    gameActive = true;
-                } else {
-                    mainSection.classList.remove('hide');
-                    stopLoop();
-                    gameActive = false;
-                }
+                if (!gameActive) { toggleGame(true); } else { toggleGame(false); }
                 currentPosition = 0;
             } else {
                 timer = setTimeout(() => {
@@ -608,7 +627,7 @@ function listenForKonamiCode() {
 }
 async function spawnVFX(vector3) {
     console.log("spawnVFX() called. Vector3: " + vector3);
-    
+
     const loader = new THREE.GLTFLoader();
     const vfxModel = await new Promise((resolve, reject) => {
         console.log("Loading coinVFX...");
@@ -633,10 +652,10 @@ async function spawnVFX(vector3) {
     pivot.position.copy(vector3);
     pivot.add(vfx);
     vfx.position.set(0, 0, 0);
-    
+
     const randomRot = Math.random() * 2 * Math.PI;
     pivot.rotation.set(0, randomRot, 0);
-    
+
     mainScene.add(pivot);
 
     console.log("Creating AnimationMixer for VFX.");
@@ -656,11 +675,80 @@ async function spawnVFX(vector3) {
 
     // Remove the VFX after 200 frames (assuming 60 FPS, this is approximately 3.33 seconds)
     const frameRate = 60;
-    const duration = 200 / frameRate * 1000; // Convert to milliseconds
+    const duration = 180 / frameRate * 1000; // Convert to milliseconds
     setTimeout(() => {
         mainScene.remove(pivot);
         console.log("VFX removed after 200 frames.");
     }, duration);
 
     mixer.push(vfxMixer);
+}
+function toggleGame(bool) {
+    if (bool) {
+        toggleGameUI(true);
+        startLoop(track);
+        gameActive = true;
+    } else {
+        toggleGameUI(false);
+        stopLoop();
+        gameActive = false;
+    }
+}
+function toggleGameUI(bool) {
+    const containers = mainSection.querySelectorAll('.container');
+    if (bool) {
+        mainSection.classList.add('hide');
+        setTimeout(() => {
+            containers.forEach(container => container.style.display = 'none');
+            game_container.style.display = 'flex';
+        }, 500);
+    } else {
+        mainSection.classList.remove('hide');
+        setTimeout(() => {
+            containers.forEach(container => container.style.display = 'flex');
+            game_container.style.display = 'none';
+        }, 500);
+    }
+}
+
+
+
+function getCoinDetails(coin) {
+    if (!coin || !coin.position || !coin.scale) {
+        console.error('Invalid coin object passed.');
+        return null;
+    }
+
+    const coinDetails = {
+        ySpeed: coin.userData.ySpeed || 0,
+        scale: coin.scale.x, // Assuming uniform scaling
+        zLocation: coin.position.z,
+    };
+    return coinDetails;
+}
+function updateScore(coinDetails) {
+    if (coinDetails === null) {
+        const finalScore = -1;
+        score += finalScore;
+        game_score_value.innerText = score.toFixed(2);
+        console.log(score);
+        return finalScore;
+    }
+
+    if (!coinDetails || !coinDetails.ySpeed || !coinDetails.scale || !coinDetails.zLocation) {
+        console.error('Invalid coin details passed.');
+        return null;
+    }
+
+    const baseScore = 10;
+    const speedMultiplier = coinDetails.ySpeed / gravity; // Higher gravity multiplier = higher speed multiplier
+    const sizeMultiplier = maxScale / coinDetails.scale; // Smaller scale = bigger points multiplier
+    const distanceMultiplier = Math.abs(minZ - coinDetails.zLocation) / Math.abs(minZ - maxZ); // More negative Z = higher multiplier
+    const scoreMultiplier = speedMultiplier * sizeMultiplier * distanceMultiplier;
+    const finalScore = baseScore * scoreMultiplier;
+
+    score += finalScore;
+    game_score_value.innerText = score.toFixed(2);
+    console.log(score);
+    return finalScore;
 }

@@ -44,7 +44,6 @@ async function autoConnect() {
   if (typeof window.ethereum !== 'undefined') {
     try {
       const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      console.log("Accounts: ", accounts);
       if (accounts.length > 0) {
         console.log('Connection Initialized...');
         updateWalletConnectionStatus(true, accounts[0]);

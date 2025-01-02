@@ -141,7 +141,6 @@
         </div>
         <nav>
             <ul>
-                <li><a href="#main_section">Try Now</a></li>
                 <li><a href="#about_section">About</a></li>
                 <li><a href="#faq_section"></a>FAQ</li>
                 <li><a href="#pricing_section">Pricing</a></li>
@@ -153,6 +152,36 @@
     <!-- #endregion Header -->
 
     <canvas id="three_js_canvas"></canvas>
+
+    <!-- #region Game Container -->
+    <div class="container" id="game_container" style="display: none;">
+        <div id="game_header">
+            <h2>Shoot the Coins!</h2>
+        </div>
+        <div id="game_rules">
+            <span>RULES</span>
+            <p>You have 2 minutes to shoot as many coins as you can. The smaller and faster coins will get you more
+                points.</p>
+        </div>
+        <div id="game_score">
+            <span>SCORE</span>
+            <p id="game_score_value">0</p>
+        </div>
+        <div id="game_leaderboard">
+            <h2>Leaderboard</h2>
+            <table id="leaderboard_table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Address</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard_body"></tbody>
+            </table>
+        </div>
+    </div>
+    <!-- #endregion Game Container -->
 
     <!-- #region Main Section -->
     <section id="main_section">
@@ -245,49 +274,100 @@
     <section id="about_section">
         <div class="container about_container">
             <div class="about_content">
-                <div class="about_left">
-                    <h2 data-speed="0.1">Connect Wallet</h2>
-                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold,
+                <div class="about_left about_item">
+                    <h2>Connect Wallet</h2>
+                    <p>Based Bin is a simple utility for onchain recycling - tell BB your threshold,
                         and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
-                <div class="about_right" data-speed="0.05">
-                    <img src="https://wallpapers.com/images/featured/blank-white-7sn5o1woonmklx1h.jpg"></img>
+                <div class="about_right about_item">
+                    <div class="card" style="--active-color: #e0f2fe">
+                        <pixel-canvas data-gap="10"></pixel-canvas>
+                        <svg fill="currentcolor" width="32" height="32" viewBox="0 0 32 32" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" stroke="currentcolor">
+                            <g id="bgCarrier" stroke-width="0" />
+                            <g id="tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
+                            <g id="iconCarrier">
+                                <path
+                                    d="M31.989 9.078c0.015-0.739-0.184-2.464-2.433-3.064l-22.576-4.519c-1.655 0-3 1.345-3 3v4.022l-1-0.002c-1.649 0.007-2.989 1.348-2.989 2.999v15.994c0 1.654 1.345 3 3 3h26.014c1.654 0 3-1.346 3-3zM5.981 4.494c0-0.522 0.402-0.952 0.913-0.996l22.063 4.465c0.008 0.004-0.164 0.56-0.965 0.55h-22.011zM30.008 27.507c0 0.552-0.448 1-1 1h-26.015c-0.552 0-1-0.448-1-1v-15.995c0-0.552 0.448-1 1-1h25.002c0.982 0 2.012-0.335 2.012-0.996v17.991h0zM5.995 17.516c-1.104 0-2 0.895-2 2s0.896 2 2 2 2-0.895 2-2-0.896-2-2-2z" />
+                            </g>
+                        </svg>
+                        <button>Code</buton>
+                    </div>
                 </div>
             </div>
             <div class="about_content">
-                <div class="about_left" data-speed="0.05">
-                    <img src="https://wallpapers.com/images/featured/blank-white-7sn5o1woonmklx1h.jpg"></img>
+                <div class="about_left about_item">
+                    <div class="card" style="--active-color: #e0f2fe">
+                        <pixel-canvas data-gap="10"></pixel-canvas>
+                        <svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                            <path fill="currentcolor" fill-rule="evenodd"
+                                d="M0,8 C0,6.34315 1.34315,5 3,5 L13,5 C14.6569,5 16,6.34315 16,8 C16,9.65685 14.6569,11 13,11 L3,11 C1.34315,11 0,9.65685 0,8 Z M10,7 L13,7 C13.5523,7 14,7.44772 14,8 C14,8.55228 13.5523,9 13,9 L8,9 L10,7 Z" />
+                        </svg>
+                        <button>Code</buton>
+                    </div>
                 </div>
-                <div class="about_right">
-                    <h2 data-speed="0.1">Set Threshold</h2>
-                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold,
+                <div class="about_right about_item">
+                    <h2>Set Threshold</h2>
+                    <p>Based Bin is a simple utility for onchain recycling - tell BB your threshold,
                         and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
             </div>
             <div class="about_content">
-                <div class="about_left">
-                    <h2 data-speed="0.1">Recycle</h2>
-                    <p data-speed="0.075">Based Bin is a simple utility for onchain recycling - tell BB your threshold,
+                <div class="about_left about_item">
+                    <h2>Recycle</h2>
+                    <p>Based Bin is a simple utility for onchain recycling - tell BB your threshold,
                         and it will
                         automagically
                         sell any assets below that threshold!</p>
                 </div>
-                <div class="about_right" data-speed="0.05">
-                    <img src="https://wallpapers.com/images/featured/blank-white-7sn5o1woonmklx1h.jpg"></img>
+                <div class="about_right about_item">
+                    <div class="card" style="--active-color: #e0f2fe">
+                        <pixel-canvas data-gap="10"></pixel-canvas>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 499.08 500.42" fill="currentcolor">
+                            <g>
+                                <g>
+                                    <polygon class="cls-1" points="1.34 0 499.08 0 499.08 498.41 0 500.42 1.34 0" />
+                                    <path
+                                        d="M251.61,354.71c-57.58-12.91-64.12-60.28-64.85-69.65l28.67-7.69a8.28,8.28,0,0,0,2.07-15.14l-82.26-48.38A10.36,10.36,0,0,0,121,217.67l-47,83a8.28,8.28,0,0,0,9.36,12.08l28.77-7.71c14.3,46.79,50.78,77.91,88.25,77.9a67.1,67.1,0,0,0,17.36-2.28,69.21,69.21,0,0,0,35-22.78,2,2,0,0,0,.36-1.9,1.94,1.94,0,0,0-1.44-1.29" />
+                                    <path
+                                        d="M359.39,356.33c38.51-41.29,44.17-97.76,12.68-129.26a68,68,0,0,0-33.79-18.25,2,2,0,0,0-1.94.66,1.94,1.94,0,0,0-.31,2c18.83,45.73-23.29,83.35-31.43,90.05l-20.87-20.87a8.28,8.28,0,0,0-14.15,5.78l-.77,95.43a10.35,10.35,0,0,0,10.34,10.42h.09l95.42-.76a8.29,8.29,0,0,0,5.8-14.14l-21.07-21.07" />
+                                    <path
+                                        d="M352.77,178.1a10.3,10.3,0,0,0-1.08-7.92L303.31,87.93a8.28,8.28,0,0,0-15.14,2l-7.71,28.77c-55-12.7-106.76,10.63-118.27,53.64a69.15,69.15,0,0,0,2.22,41.77,2,2,0,0,0,1.61,1.29,2,2,0,0,0,1.87-.84c25.36-36.92,81.67-23.79,92.47-20.85l-7.59,28.36a8.16,8.116,0,0,0,2.92,8.69,8.24,8.24,0,0,0,9.17.66l83-47.05a10.29,10.29,0,0,0,4.89-6.32" />
+                                </g>
+                            </g>
+                        </svg>
+                        <button>Code</buton>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
     <!-- #endregion About Section -->
 
+    <!-- #region FAQ Section -->
+    <section id="faq_section">
+        <div class="container faq_container">
+            <h2>FAQ</h2>
+            <div class="faq_item">
+                <button class="dropdown_toggle" data-target="dropdown_1">What can BB do?</button>
+                <div class="dropdown_content" id="dropdown_1">
+                    <p>BasedBin can detect all tokens in your wallet. It then allows you to set a threshold and sell any
+                        tokens in your wallet that you no longer want.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- #endregion FAQ Section -->
+
     <!-- #region Footer -->
     <footer>
         <p>© The Growth Cult. LLC. 2024 • Developed by
-            <a href="https://tukyo.org/" target="_blank"><span id="tukyo_footer">Tukyo
+            <a href="https://tukyo.org/" target="_blank">
+                <span id="tukyo_footer">Tukyo
                     <svg id="sypher-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 105.87 120.22">
                         <g id="Layer_2" data-name="Layer 2">
                             <g id="svg1">
@@ -312,6 +392,7 @@
 <script src="scripts/recycle.js"></script>
 <script src="scripts/interface.js"></script>
 <script src="scripts/3d.js"></script>
+<script src="scripts/cards.js"></script>
 
 <script src="scripts/wavesurfer.min.js"></script>
 <script src="scripts/audio.js"></script>

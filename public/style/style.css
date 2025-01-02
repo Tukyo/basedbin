@@ -27,6 +27,15 @@
     --rainbow_6: #3773F5;
     --rainbow_6_dark: #2a5cb8;
     --rainbow_6_light: #7fa9ff;
+
+    --space: 1rem;
+    --bg: #09090b;
+    --fg: #e3e3e3;
+    --surface-1: #101012;
+    --surface-2: #27272a;
+    --surface-3: #52525b;
+    --ease-out: cubic-bezier(0.5, 1, 0.89, 1);
+    --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
 }
 html {
     scroll-behavior: smooth;
@@ -296,6 +305,7 @@ label:active:after {
     border: 1px solid #555;
     border-radius: 10px;
     background-color: black;
+    width: 80%;
 }
 .tokens_mask {
     overflow-y: auto;
@@ -462,12 +472,16 @@ tr {
     gap: 7.5vw;
     margin: 20px 10px 20px 10px;
 }
+.about_item {
+    height: 200px;
+    margin: auto;
+    justify-content: center;
+}
 .about_left {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 50%;
-    margin: auto 10px;
 }
 .about_left img {
     width: 100%;
@@ -479,7 +493,6 @@ tr {
     flex-direction: column;
     align-items: center;
     width: 50%;
-    margin: auto 10px;
 }
 .about_right img {
     width: 100%;
@@ -496,15 +509,39 @@ tr {
 /* #endregion Logo */
 /**/
 /* #region Footer */
+footer::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: #555;
+    top: 50%;
+    left: 0%;
+    transform: translateY(-50%);
+    z-index: 0;
+}
 footer {
-    background-color: var(--slate);
+    display: flex;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
     color: white;
     text-align: center;
     padding: 10px 20px;
     margin-top: auto;
 }
+footer a {
+    text-decoration: none;
+}
+footer p {
+    background-color: black;
+    z-index: 1;
+    position: relative;
+    width: 455px;
+}
 #tukyo_footer {
     color: #888888;
+    pointer-events: all;
 }
 #tukyo_footer:hover {
     cursor: pointer;
@@ -547,9 +584,13 @@ footer {
     }
     #recycle_container {
         width: 100%;
+        margin-top: 60px;
     }
     #options {
-        width: 60%;
+        width: 100%;
+    }
+    #options {
+        width: 80%;
     }
 }
 @media (max-width: 600px) {
@@ -566,9 +607,32 @@ footer {
         width: 90%;
     }
 }
-@media (max-width: 490px) {
+@media (max-width: 540px) {
+    thead {
+        display: none;
+    }
+    tr {
+        display: flex;
+        flex-direction: column;
+        width: 100px;
+        justify-content: flex-start;
+        padding: 10px;
+        border: 1px solid #555;
+        border-radius: 10px;
+    }
+    #tokens_table {
+        table-layout: fixed;
+    }
+    #tokens_body {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px 0px;
+    }
     #tokens_table td {
         padding: 0px;
+        margin: 1px auto;
     }   
     .token_logo {
         width: 1.5rem;
@@ -577,6 +641,20 @@ footer {
     .default_logo {
         width: 1.5rem;
         height: 1.5rem;
+    }
+    .list_cell {
+        max-width: 100px;
+    }
+    #process {
+        margin: 0;
+        width: 100%;
+    }
+    .loader {
+        width: 1.25rem;
+    }
+    footer p {
+        font-size: small;
+        width: 380px;
     }
 }
 @media (max-width: 390px) {
@@ -701,8 +779,146 @@ footer {
     height: 100%;
 }
 
+#game_header {
+    display: flex;
+    margin-top: 70px;
+    justify-content: center;
+}
+#game_rules {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+#game_leaderboard {
+    margin-top: 50vh;
+}
 
 
+.card {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    width: 100%;
+    height: 100%;
+    grid-template-areas: "card";
+    place-items: center;
+    border: 1px solid var(--surface-2);
+    isolation: isolate;
+    transition: border-color 200ms var(--ease-out);
+    user-select: none;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at bottom left,
+                transparent 55%,
+                var(--surface-1));
+        pointer-events: none;
+        box-shadow: var(--bg) -0.5cqi 0.5cqi 2.5cqi inset;
+        transition: opacity 900ms var(--ease-out);
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        aspect-ratio: 1;
+        background: radial-gradient(circle, var(--bg), transparent 65%);
+        opacity: 0;
+        transition: opacity 800ms var(--ease-out);
+    }
+
+    >* {
+        grid-area: card;
+    }
+
+    svg {
+        position: relative;
+        z-index: 1;
+        width: 30%;
+        height: auto;
+        color: var(--surface-3);
+        transition: 300ms var(--ease-out);
+        transition-property: color, scale;
+    }
+
+    button {
+        opacity: 0;
+    }
+
+    &:focus-within {
+        outline: 5px auto Highlight;
+        outline: 5px auto -webkit-focus-ring-color;
+    }
+
+    &:where(:hover, :focus-within) {
+        border-color: var(--active-color, var(--fg));
+        transition: border-color 800ms var(--ease-in-out);
+    }
+
+    &:where(:hover, :focus-within) svg {
+        color: var(--active-color, var(--fg));
+        scale: 1.1;
+        transition: 300ms var(--ease-in-out);
+    }
+
+    &:where(:hover, :focus-within)::before {
+        opacity: 0;
+    }
+
+    &:where(:hover, :focus-within)::after {
+        opacity: 1;
+    }
+}
 
 
+.faq_container {
+    width: 80%;
+}
+.faq_item {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 5px 10px;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
 
+.faq_item:hover {
+    cursor: pointer;
+    border: 1px solid white;
+}
+.faq_item:hover .dropdown_toggle {
+    color: white;
+}
+
+.dropdown_toggle {
+    align-self: flex-start;
+    justify-content: flex-start;
+    background-color: black;
+    color: #555;
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    margin: 10px 0px;
+}
+
+.dropdown_content {
+    display: none;
+    padding: 10px;
+    border-left: 1px solid #555;
+    width: 80%;
+    text-align: start;
+    margin-bottom: 10px;
+}
+.dropdown_content p {
+    margin: 0px;
+}
+
+.dropdown_content.show {
+    display: block;
+}

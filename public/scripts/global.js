@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () { console.log('global.js loaded...'); detectPageFocus(); });
+document.addEventListener('DOMContentLoaded', function () { console.log('global.js loaded...'); });
 document.addEventListener("visibilitychange", detectPageFocus);
 let pageFocused = true;
 //// 
@@ -28,9 +28,9 @@ const loaderHTML = `<div class="loader"></div>`;
 const scrollPrompt = document.getElementById('scroll_prompt');
 const characters = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトホモヨョロヲゴゾドボポヴッン0123456789DESYPHEƎR';
 const defaultTokenSVG = `
-<svg class="default_logo" width="100%" height="100%" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+<svg class="default_logo" width="100%" height="100%" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
     <path fill="currentColor" fill-rule="evenodd"
-        d="M6,12 C2.68629,12 0,9.313725 0,6 C0,2.68629 2.68629,0 6,0 C9.313725,0 12,2.68629 12,6 C12,9.313725 9.313725,12 6,12 Z M3.324375,4.643415 C3.324375,4.329675 3.4311225,4.0118025 3.644625,3.689805 C3.8581275,3.3678075 4.169625,3.10113 4.579125,2.8897725 C4.988625,2.6784075 5.46636,2.5727475 6.01236,2.5727475 C6.5198625,2.5727475 6.967875,2.6610825 7.356375,2.8377675 C7.744875,3.0144525 8.045025,3.2547075 8.25675,3.55854 C8.468475,3.8623725 8.574375,4.1926275 8.574375,4.5492975 C8.574375,4.830015 8.514,5.0760375 8.39325,5.2874025 C8.2725,5.49876 8.129025,5.6812275 7.96275,5.83479 C7.796475,5.98836 7.498125,6.24678 7.0676175,6.610065 C6.9486225,6.71244 6.853245,6.8024175 6.7814925,6.8800275 C6.7097475,6.9576375 6.65637,7.0286475 6.6213675,7.09305 C6.3321,7.7601 5.077635,7.6848 5.319375,6.7512375 C5.4103725,6.54813 5.5311225,6.369795 5.681625,6.216225 C5.8321275,6.062655 6.0351075,5.880195 6.29061,5.66883 C6.5146125,5.4838875 6.6765,5.3443725 6.77625,5.250255 C6.876,5.15613 6.96,5.051265 7.02825,4.935675 C7.0965,4.820085 7.13061,4.694595 7.13061,4.55919 C7.13061,4.2949875 7.0265025,4.07208 6.81825,3.890445 C6.610005,3.7088025 6.3413625,3.6179775 6.01236,3.6179775 C5.627355,3.6179775 5.343855,3.70962 5.16186,3.8929125 C4.9798575,4.076205 4.82586,4.3461825 4.69986,4.70286 C4.5808575,5.076045 4.3551225,5.2626375 4.0226175,5.2626375 C3.82662,5.2626375 3.661245,5.19741 3.5265,5.0669625 C3.3917475,4.936515 3.324375,4.795335 3.324375,4.643415 Z M6,9.75 C5.5857825,9.75 5.25,9.414225 5.25,9 C5.25,8.585775 5.5857825,8.25 6,8.25 C6.4142175,8.25 6.75,8.585775 6.75,9 C6.75,9.414225 6.4142175,9.75 6,9.75 Z"/>
+        d="M256,0C114.61,0,0,114.61,0,256S114.61,512,256,512,512,397.38,512,256,397.38,0,256,0Zm47.36,130.45,7.1-7.09a5.85,5.85,0,0,1,4.17-1.74h0a5.82,5.82,0,0,1,4.17,1.73l69.84,69.83v0a5.89,5.89,0,0,1,0,8.33l-7.1,7.09,0,0a5.89,5.89,0,0,1-8.32,0L303.36,138.8v0A5.89,5.89,0,0,1,303.36,130.45Zm-180,62.74,69.83-69.83a5.88,5.88,0,0,1,4.18-1.74h0a5.9,5.9,0,0,1,4.17,1.73l7.09,7.09v0a5.89,5.89,0,0,1,0,8.33L138.8,208.63h0a5.89,5.89,0,0,1-8.33,0l-7.09-7.09,0,0A5.88,5.88,0,0,1,123.36,193.19Zm85.27,188.35-7.09,7.09,0,0a5.88,5.88,0,0,1-8.33,0L123.36,318.8h0a5.88,5.88,0,0,1,0-8.33l7.09-7.1a5.91,5.91,0,0,1,4.18-1.73h0a5.9,5.9,0,0,1,4.17,1.73l69.83,69.83,0,0A5.89,5.89,0,0,1,208.63,381.54Zm51.52,4.81a5.89,5.89,0,0,1-8.33,0L125.66,260.17v0a5.88,5.88,0,0,1,0-8.32L251.83,125.66a5.84,5.84,0,0,1,4.16-1.73,5.9,5.9,0,0,1,4.18,1.73L386.33,251.83h0a5.89,5.89,0,0,1,0,8.33L260.17,386.34ZM388.64,318.8,318.8,388.63l0,0a5.87,5.87,0,0,1-8.32,0l-7.1-7.09v0a5.89,5.89,0,0,1,0-8.33l69.84-69.83a5.88,5.88,0,0,1,4.17-1.73h0a5.9,5.9,0,0,1,4.17,1.73l7.1,7.1v0A5.88,5.88,0,0,1,388.64,318.8Z" />
 </svg>`;
 //// Root
 const root = document.documentElement;
@@ -176,7 +176,7 @@ let currentETHPrice = null;
                 .filter((token) => parseInt(token.tokenBalance, 16) !== 0)
                 .map((token) => token.contractAddress);
 
-                const databaseTokenData = await fetchTokensFromDatabase(contractAddresses);
+                const fetchedTokens = await fetchTokensFromDatabase(contractAddresses);
 
                 tokens = await Promise.all(
                     data.result.tokenBalances.map(async (token) => {
@@ -192,7 +192,7 @@ let currentETHPrice = null;
                             let chosenPool = null;
                             let image = null;
 
-                            const result = databaseTokenData[contractAddress];
+                            const result = fetchedTokens[contractAddress];
 
                             if (result) {
                                 name = result.name;
@@ -277,7 +277,6 @@ let currentETHPrice = null;
         const feeTiers = [500, 3000, 10000];
         const MIN_LIQUIDITY_USD_THRESHOLD = 100; // Example: $100 USD (adjust as needed)
 
-        // Fetch the current ETH price in USD
         if (currentETHPrice === null) { currentETHPrice = await getETHPrice(); }
         const ethPrice = ethers.BigNumber.from(ethers.utils.parseUnits(currentETHPrice.toString(), 18));
 
@@ -296,7 +295,7 @@ let currentETHPrice = null;
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error(
-                    `Failed to fetch pools for token ${tokenAddress}:`,
+                    `Failed to fetch pools for token ${truncate(tokenAddress)}:`,
                     response.status,
                     errorData.error || response.statusText
                 );
@@ -304,11 +303,11 @@ let currentETHPrice = null;
             }
     
             const pools = await response.json();
-            console.log(`Fetched pools for token ${tokenAddress}:`, pools);
+            console.log(`Fetched pools for token ${truncate(tokenAddress)}:`, pools);
     
             return pools;
         } catch (error) {
-            console.error(`Error fetching pools for token ${tokenAddress}:`, error.message);
+            console.error(`Error fetching pools for token ${truncate(tokenAddress)}:`, error.message);
             return null;
         }
     }
@@ -654,6 +653,7 @@ let currentETHPrice = null;
         localStorage.setItem('user', JSON.stringify(userCache));
     
         console.log(`Cached data for wallet ${truncate(checksummedAddress)}`);
+        setTimeout(updateCanvases, 1000); 
     }
     //
     function fetchUserDetails() {
