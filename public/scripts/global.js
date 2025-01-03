@@ -59,14 +59,20 @@ const refreshTokensButton = document.getElementById("refresh_tokens");
 const mainSection = document.getElementById("main_section");
 const recycleContainer = document.getElementById("recycle_container");
 const homeContainer = document.getElementById("home_container");
-////
+const moreOptionsContainer = document.getElementById('more_options_container');
+const thresholdContainer = document.getElementById('threshold_container');
+//
 //// Inputs
 const thresholdInput = document.getElementById("threshold_input");
 ////
 //
+//// Misc
+const thresholdSubtext = document.getElementById("threshold_subtext");
+////
+//
 //// Toggles
 const toggleSwitch = document.getElementById("switch");
-////
+const optionToggles = document.querySelectorAll(".option_toggle");
 //
 //// Table
 const table = document.getElementById("tokens_table");

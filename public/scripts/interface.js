@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () { console.log('interface.js loaded...'); mobileControls(); });
+document.addEventListener('DOMContentLoaded', function () { console.log('interface.js loaded...'); mobileControls(); fadeInOnScroll(); });
 
 // #region Initialization
 window.addEventListener('load', () => { parallax(); });
@@ -10,9 +10,12 @@ document.addEventListener('tokenDetailsFetched', (event) => {
 document.addEventListener('backgroundLogoFetchingComplete', () => { appendDefaultLogos(); });
 document.addEventListener("tokenPriceUpdating", (event) => { const { contractAddress } = event.detail; tokenPriceLoading(contractAddress); });
 document.addEventListener("tokenPriceUpdated", (event) => { const { contractAddress, price } = event.detail; tokenPriceLoaded(contractAddress, price); });
+document.querySelectorAll('.dropdown_content').forEach(content => { if (!content.hasAttribute('data-state')) { content.setAttribute('data-state', 'collapsed'); }});
+document.querySelectorAll('.hover_detection').forEach(detection => { faqHoverDetection(detection); });
 
 toggleSwitch.addEventListener("change", () => { isValueCheck = toggleSwitch.checked; highlightRows(); });
 thresholdInput.addEventListener("input", () => { currentThreshold = parseFloat(thresholdInput.value) || 0; highlightRows(); });
+optionToggles.forEach(toggle => { toggle.addEventListener('click', () => { toggleMoreOptions(); });});
 
 tokensPageButton.addEventListener('click', () => { toggleTablePage('tokens'); });
 premiumPageButton.addEventListener('click', () => { toggleTablePage('deposits'); });
@@ -27,6 +30,8 @@ startButton.addEventListener('click', async () => { getStarted(); });
 nameHeader.addEventListener('click', handleHeaderClick("name"));
 tokensHeader.addEventListener('click', handleHeaderClick("tokens"));
 valueHeader.addEventListener('click', handleHeaderClick("value"));
+
+let isMoreOptionsVisible = false;
 
 let isRecycling = false;
 let currentThreshold = null;
@@ -103,6 +108,102 @@ function mobileControls() {
     const header = document.querySelector('header');
 
     hamburgerMenu.addEventListener('click', () => { header.classList.toggle('show'); });
+}
+function fadeInOnScroll() {
+    const elements = document.querySelectorAll('[data-fade]');
+    if (elements.length === 0) { return; }
+
+    elements.forEach(el => {
+        el.style.opacity = 0;
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const el = entry.target;
+            if (entry.isIntersecting && entry.intersectionRatio > 0.1) {
+                el.style.opacity = 1;
+                el.style.transform = 'translateY(0)';
+            } else {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    elements.forEach(el => observer.observe(el));
+}
+function toggleMoreOptions() {
+    if (isMoreOptionsVisible) {
+        moreOptionsContainer.classList.add('hide');
+        setTimeout(() => {
+            moreOptionsContainer.style.display = 'none';
+            moreOptionsContainer.classList.remove('hide');
+
+            thresholdContainer.style.display = 'flex';
+            thresholdContainer.classList.add('show');
+            thresholdSubtext.style.display = 'flex';
+            thresholdSubtext.classList.add('show');
+        }, 500);
+    } else {
+        thresholdContainer.classList.add('hide');
+        thresholdSubtext.classList.add('hide');
+        setTimeout(() => {
+            thresholdContainer.style.display = 'none';
+            thresholdContainer.classList.remove('hide');
+            thresholdSubtext.style.display = 'none';
+            thresholdSubtext.classList.remove('hide');
+
+            moreOptionsContainer.style.display = 'flex';
+            moreOptionsContainer.classList.add('show');
+        }, 500);
+    }
+    isMoreOptionsVisible = !isMoreOptionsVisible;
+}
+function faqHoverDetection(detection) {
+    let hoverTimeout;
+
+    detection.addEventListener('click', () => {
+        const targetId = detection.nextElementSibling.getAttribute('data-target');
+        const content = document.getElementById(targetId);
+
+        content.classList.toggle('show');
+
+        if (content.classList.contains('show')) {
+            content.setAttribute('data-state', 'shown');
+        } else {
+            content.setAttribute('data-state', 'collapsed');
+        }
+    });
+
+    detection.addEventListener('mouseover', () => {
+        clearTimeout(hoverTimeout);
+        const targetId = detection.nextElementSibling.getAttribute('data-target');
+        const content = document.getElementById(targetId);
+
+        hoverTimeout = setTimeout(() => {
+            if (content.getAttribute('data-state') === 'collapsed') {
+                content.classList.remove('collapse');
+                content.classList.add('show');
+                content.setAttribute('data-state', 'shown');
+            }
+        }, 200);
+    });
+
+    detection.addEventListener('mouseout', () => {
+        clearTimeout(hoverTimeout);
+        const targetId = detection.nextElementSibling.getAttribute('data-target');
+        const content = document.getElementById(targetId);
+
+        hoverTimeout = setTimeout(() => {
+            if (content.getAttribute('data-state') === 'shown') {
+                content.classList.remove('show');
+                content.classList.add('collapse');
+                content.setAttribute('data-state', 'collapsed');
+            }
+        }, 500);
+    });
 }
 // #endregion Main Interface
 ////
@@ -586,13 +687,3 @@ function processAndReplaceText(element, newText = null) {
     }, randomSpeed);
 }
 // #endregion Animations
-
-
-
-document.querySelectorAll('.dropdown_toggle').forEach(button => {
-    button.addEventListener('click', () => {
-        const targetId = button.getAttribute('data-target');
-        const content = document.getElementById(targetId);
-        content.classList.toggle('show');
-    });
-});

@@ -12,8 +12,6 @@ function updateCanvases() {
             rgbToHex(styles.getPropertyValue('--dark').trim()),
         ];
         canvas.dataset.colors = colors.join(", ");
-        console.log("Updated colors for:", canvas, colors);
-
         canvas.restart();
     });
 }

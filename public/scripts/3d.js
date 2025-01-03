@@ -131,7 +131,7 @@ const cameraOptions = {
  * 2) Initialization: Attach Depth Texture and use it in Composer
  ********************************************************************/
 function initThree() {
-    const canvas = document.getElementById("three_js_canvas");
+    const canvas = document.getElementById("coin_canvas");
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
 

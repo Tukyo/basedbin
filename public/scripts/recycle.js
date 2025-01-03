@@ -13,7 +13,6 @@ let recycleTokens = [];
  *****************************************************************************/
 async function prepareTokensForSwap() {
     if (!window.ethereum) { console.log("No Ethereum provider found..."); return; }
-    // initializeMatterJS('.matter_container', 'matter_canvas');
 
     const cacheCleared = await clearCachedTokens(connectedWallet, true);
     if (!cacheCleared) { return; }
